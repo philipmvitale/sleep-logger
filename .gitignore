@@ -1,0 +1,9 @@
+# Build
+.gradle
+build
+
+# IDE
+.idea
+
+# Volumes
+db

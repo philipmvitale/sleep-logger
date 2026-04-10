@@ -22,7 +22,9 @@ services:
       start_period: 10s
 
   sleep_api:
-    build: ./sleep/.
+    build:
+      context: .
+      dockerfile: sleep/Dockerfile
     volumes:
       - ./sleep/:/sleep/
     ports:
