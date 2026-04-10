@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.Connection
 import javax.sql.DataSource
 
-
 @Configuration
 @Profile("!$UNIT_TEST_PROFILE")
 class DatabaseConfiguration {
@@ -34,11 +33,10 @@ class DatabaseConfiguration {
     }
 
     @Bean
-    fun dbConnection(dataSource: DataSource) : Connection
-        = dataSource.connection
+    fun dbConnection(dataSource: DataSource): Connection = dataSource.connection
 
     @Bean
-    fun namedParameterJdbcTemplate(dataSource: DataSource) : NamedParameterJdbcTemplate {
+    fun namedParameterJdbcTemplate(dataSource: DataSource): NamedParameterJdbcTemplate {
         return NamedParameterJdbcTemplate(dataSource)
     }
 }

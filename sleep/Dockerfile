@@ -1,14 +1,22 @@
-FROM eclipse-temurin:17-jdk
-
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
-COPY build.gradle gradlew settings.gradle ./
-COPY gradle/ gradle/
+COPY sleep/build.gradle sleep/gradlew sleep/settings.gradle ./
+COPY sleep/gradle/ gradle/
 
-RUN ./gradlew wrapper
+RUN ./gradlew dependencies --no-daemon
 
-COPY src/ src
+COPY .git/ .git/
+COPY sleep/src/ src/
 
-RUN ./gradlew build
+RUN ./gradlew bootJar --no-daemon
 
-ENTRYPOINT ["java","-jar","build/libs/sleep-0.0.1-SNAPSHOT.jar"]
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+
+COPY --from=build /app/build/libs/*.jar app.jar
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+USER appuser
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
