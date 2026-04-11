@@ -9,6 +9,7 @@ plugins {
     id 'org.jlleitschuh.gradle.ktlint' version '11.6.1'
     id 'org.sonarqube' version '7.2.3.7755'
     id 'com.gorylenko.gradle-git-properties' version '2.5.7'
+    id 'org.openapi.generator' version '7.12.0'
 }
 
 group = 'com.noom.interview.fullstack'
@@ -29,8 +30,11 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'io.github.oshai:kotlin-logging-jvm:5.1.4'
+    implementation 'javax.validation:validation-api:2.0.1.Final'
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.mockk:mockk:1.13.13'
     testImplementation 'org.testcontainers:testcontainers:1.21.4'
     testImplementation 'org.testcontainers:junit-jupiter:1.21.4'
     testImplementation 'org.testcontainers:postgresql:1.21.4'
@@ -47,9 +51,46 @@ tasks.named('bootBuildImage') {
     builder = 'paketobuildpacks/builder-jammy-base:latest'
 }
 
+openApiGenerate {
+    generatorName = 'kotlin-spring'
+    inputSpec = "${projectDir}/src/main/resources/openapi/sleep-api.yaml"
+    outputDir = "${project.layout.buildDirectory.get()}/generated/openapi"
+    apiPackage = 'com.noom.interview.fullstack.sleep.api'
+    modelPackage = 'com.noom.interview.fullstack.sleep.api.model'
+    configOptions = [
+            interfaceOnly        : 'true',
+            useTags              : 'true',
+            documentationProvider: 'none',
+            useSpringBoot3       : 'false',
+            exceptionHandler     : 'false',
+            enumPropertyNaming   : 'UPPERCASE',
+            serviceInterface     : 'false',
+            skipDefaultInterface : 'false',
+    ]
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDir "${project.layout.buildDirectory.get()}/generated/openapi/src/main/kotlin"
+        }
+    }
+}
+
+tasks.named('compileKotlin') {
+    dependsOn tasks.named('openApiGenerate')
+}
+
+tasks.matching { it.name.startsWith('runKtlint') }.configureEach {
+    dependsOn tasks.named('openApiGenerate')
+}
+
 ktlint {
     reporters {
         reporter 'html'
+    }
+    filter {
+        exclude { it.file.path.contains('generated') }
     }
 }
 
@@ -112,7 +153,10 @@ kover {
         }
         filters {
             excludes {
-                classes('com.noom.interview.fullstack.sleep.SleepApplicationKt')
+                classes(
+                        'com.noom.interview.fullstack.sleep.SleepApplicationKt',
+                        'com.noom.interview.fullstack.sleep.api.*',
+                )
             }
         }
     }
