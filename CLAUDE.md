@@ -1,0 +1,75 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build & Test Commands
+
+All Gradle commands run from the `sleep/` directory:
+
+```bash
+cd sleep
+
+# Full build (compile + unit tests + integration tests + lint + coverage)
+./gradlew build
+
+# Run all tests and checks
+./gradlew check
+
+# Unit tests only
+./gradlew test
+
+# Integration tests only (uses Testcontainers — requires Docker running)
+./gradlew integrationTest
+
+# Run a single test class
+./gradlew test --tests "com.noom.interview.fullstack.sleep.SleepApplicationTests"
+
+# Run a single integration test
+./gradlew integrationTest --tests "com.noom.interview.fullstack.sleep.TestControllerIT"
+
+# Generate OpenAPI classes
+./gradlew generateOpenApi
+
+# Lint (ktlint)
+./gradlew runKtlintCheck
+
+# Auto-fix lint issues
+./gradlew runKtlintFormat
+
+# Coverage report (Kover, enforces 90% minimum)
+./gradlew koverVerify
+```
+
+Run the full stack with Docker: `docker compose up --build` (Postgres on 5432, API on 8080).
+
+## Architecture
+
+Kotlin 1.6 + Spring Boot 2.7 REST API backed by PostgreSQL 13. Java 17. No ORM — uses `NamedParameterJdbcTemplate`
+(Spring JDBC) directly.
+
+### API-First with OpenAPI Generator
+
+The API contract is defined in `sleep/src/main/resources/openapi/sleep-api.yaml`. The OpenAPI Generator Gradle plugin
+generates request/response DTOs and interfaces for each tag into `build/generated/openapi/`. The controllers implement
+generated interfaces — never edit API interface or DTOs by hand; change the YAML spec instead.
+
+### Layer Structure
+
+- **Controller** (`controller/SleepController.kt`) — implements generated API interface
+- **Service** (`service/SleepService.kt` / `SleepServiceImpl.kt`) — business logic, maps between domain model and
+  generated API DTOs.
+- **Repository** (`repository/SleepRepository.kt` / `JdbcSleepRepository.kt`) — SQL via `NamedParameterJdbcTemplate`
+- **Domain model** (`model/SleepLog.kt`, `model/Mood.kt`) — internal representation.
+- **Exception handling** (`controller/GlobalExceptionHandler.kt`) — translates domain exceptions to HTTP error
+  responses.
+
+### Database
+
+PostgreSQL with Flyway migrations in `sleep/src/main/resources/db/migration/`.
+
+### Testing
+
+- **Unit tests** (`src/test/`) — use MockK for mocking, `@ActiveProfiles("unittest")` disables Flyway.
+- **Integration tests** (`src/it/`) — extend `AbstractIntegrationTest` which starts a PostgreSQL Testcontainers
+  instance. These run a full Spring context with `MockMvc`.
+- CI runs `./gradlew build sonar` which includes both test suites.
