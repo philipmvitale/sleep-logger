@@ -6,4 +6,4 @@ build
 .idea
 
 # Volumes
-db
+postgresql_data
