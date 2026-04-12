@@ -23,7 +23,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TestResponse'
+
+  /api/v1/sleep-log:
+    post:
+      operationId: createSleepLog
+      summary: Create today's sleep log
+      description: Records details about the user's sleep.
+      tags:
+        - sleep
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSleepLogRequest'
+      responses:
+        '201':
+          description: Sleep log created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SleepLogResponse'
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: A sleep log already exists for this user and time range.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: getSleepLog
+      summary: Get today's sleep log
+      description: Returns details about the user's sleep.
+      tags:
+        - sleep
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+      responses:
+        '200':
+          description: Sleep log found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SleepLogResponse'
+        '404':
+          description: No sleep log found for today.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/sleep-stats:
+    get:
+      operationId: getSleepStats
+      summary: Get sleep statistics
+      description: Returns aggregated sleep statistics over the last 30 days.
+      tags:
+        - sleep
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+      responses:
+        '200':
+          description: Statistics computed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SleepStatsResponse'
+
 components:
+  parameters:
+    UserIdHeader:
+      name: X-User-Id
+      in: header
+      required: true
+      description: Identifies the user making the request.
+      schema:
+        type: integer
+        format: int64
+
   schemas:
     TestResponse:
       type: object
@@ -34,3 +118,138 @@ components:
           type: string
           description: A test message.
           example: Hello world!
+
+    CreateSleepLogRequest:
+      type: object
+      required:
+        - bedTime
+        - wakeTime
+        - mood
+      properties:
+        bedTime:
+          type: string
+          format: date-time
+          description: The date-time the user went to bed.
+          example: "2024-01-14T22:30:00Z"
+        wakeTime:
+          type: string
+          format: date-time
+          description: The date-time the user woke up.
+          example: "2024-01-15T06:45:00Z"
+        mood:
+          $ref: '#/components/schemas/Mood'
+
+    SleepLogResponse:
+      type: object
+      required:
+        - bedTime
+        - bedTimeZone
+        - wakeTime
+        - wakeTimeZone
+        - durationMinutes
+        - mood
+      properties:
+        bedTime:
+          type: string
+          format: date-time
+          description: The date-time the user went to bed.
+          example: "2024-01-14T22:30:00Z"
+        bedTimeZone:
+          type: string
+          description: The time zone of the bed time.
+          example: "America/New_York"
+        wakeTime:
+          type: string
+          format: date-time
+          description: The date-time the user woke up.
+          example: "2024-01-15T06:45:00Z"
+        wakeTimeZone:
+          type: string
+          description: The time zone of the wake time.
+          example: "America/New_York"
+        durationMinutes:
+          type: integer
+          description: Total time in bed in minutes.
+          example: 495
+        mood:
+          $ref: '#/components/schemas/Mood'
+
+    SleepStatsResponse:
+      type: object
+      required:
+        - dateFrom
+        - dateTo
+        - averageDurationMinutes
+        - averageBedTime
+        - averageWakeTime
+        - moodFrequencies
+      properties:
+        dateFrom:
+          type: string
+          format: date-time
+          description: Start of the averaging period.
+          example: "2023-12-17T00:00:00Z"
+        dateTo:
+          type: string
+          format: date-time
+          description: End of the averaging period.
+          example: "2024-01-15T00:00:00Z"
+        averageDurationMinutes:
+          type: integer
+          description: Average total time in bed in minutes.
+          example: 465
+        averageBedTime:
+          type: string
+          format: time
+          description: Average local time the user goes to bed.
+          example: "23:00:00"
+        averageWakeTime:
+          type: string
+          format: time
+          description: Average local time the user wakes up.
+          example: "06:45:00"
+        moodFrequencies:
+          $ref: '#/components/schemas/MoodFrequencies'
+
+    MoodFrequencies:
+      type: object
+      required:
+        - badFrequency
+        - okFrequency
+        - goodFrequency
+      properties:
+        badFrequency:
+          type: integer
+          description: Count of BAD mood entries.
+          example: 5
+        okFrequency:
+          type: integer
+          description: Count of OK mood entries.
+          example: 12
+        goodFrequency:
+          type: integer
+          description: Count of GOOD mood entries.
+          example: 13
+
+    Mood:
+      type: string
+      enum:
+        - BAD
+        - OK
+        - GOOD
+      description: How the user felt in the morning.
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type.
+          example: "Not Found"
+        message:
+          type: string
+          description: Detailed error message.
+          example: "No sleep log found for today."

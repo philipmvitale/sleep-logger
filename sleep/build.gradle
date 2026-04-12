@@ -67,6 +67,9 @@ openApiGenerate {
             serviceInterface     : 'false',
             skipDefaultInterface : 'false',
     ]
+    typeMappings = [
+            'time': 'java.time.LocalTime'
+    ]
 }
 
 sourceSets {
@@ -156,6 +159,7 @@ kover {
                 classes(
                         'com.noom.interview.fullstack.sleep.SleepApplicationKt',
                         'com.noom.interview.fullstack.sleep.api.*',
+                        'com.noom.interview.fullstack.sleep.model.*',
                 )
             }
         }
