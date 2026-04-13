@@ -7,3 +7,6 @@ build
 
 # Volumes
 postgresql_data
+
+# Secrets
+.env
