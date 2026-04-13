@@ -1,5 +1,7 @@
 package com.noom.interview.fullstack.sleep.repository
 
+import com.noom.interview.fullstack.sleep.exception.ResourceConflictException
+import com.noom.interview.fullstack.sleep.exception.SleepLogInvalidException
 import com.noom.interview.fullstack.sleep.model.Mood
 import com.noom.interview.fullstack.sleep.model.SleepLog
 import io.mockk.every
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -128,6 +131,50 @@ class JdbcSleepLogRepositoryTest {
             assertThat(result.mood).isEqualTo(Mood.GOOD)
             assertThat(result.bedTime).isEqualTo(bedTime)
             assertThat(result.wakeTime).isEqualTo(wakeTime)
+        }
+
+        @Test
+        fun `translates overlapping sleep constraint to ResourceConflictException`() {
+            every {
+                jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog>>())
+            } throws DataIntegrityViolationException(
+                "insert failed",
+                Exception("""violates exclude constraint "no_overlapping_sleep"""")
+            )
+
+            assertThatThrownBy { repository.saveSleepLog(buildSleepLog()) }
+                .isInstanceOf(ResourceConflictException::class.java)
+                .hasMessageContaining("overlaps")
+        }
+
+        @Test
+        fun `translates wake_after_bed constraint to SleepLogInvalidException`() {
+            every {
+                jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog>>())
+            } throws DataIntegrityViolationException(
+                "insert failed",
+                Exception("""violates check constraint "wake_after_bed"""")
+            )
+
+            assertThatThrownBy { repository.saveSleepLog(buildSleepLog()) }
+                .isInstanceOf(SleepLogInvalidException::class.java)
+                .hasMessageContaining("Wake time must be after bed time")
+        }
+
+        @Test
+        fun `rethrows unknown DataIntegrityViolationException as-is`() {
+            val cause = DataIntegrityViolationException(
+                "insert failed",
+                Exception("""violates constraint "some_other_constraint"""")
+            )
+
+            every {
+                jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog>>())
+            } throws cause
+
+            assertThatThrownBy { repository.saveSleepLog(buildSleepLog()) }
+                .isInstanceOf(DataIntegrityViolationException::class.java)
+                .isSameAs(cause)
         }
     }
 

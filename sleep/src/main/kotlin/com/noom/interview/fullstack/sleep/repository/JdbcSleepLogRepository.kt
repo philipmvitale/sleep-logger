@@ -1,8 +1,12 @@
 package com.noom.interview.fullstack.sleep.repository
 
+import com.noom.interview.fullstack.sleep.exception.DbConstraints
+import com.noom.interview.fullstack.sleep.exception.ResourceConflictException
+import com.noom.interview.fullstack.sleep.exception.SleepLogInvalidException
 import com.noom.interview.fullstack.sleep.model.Mood
 import com.noom.interview.fullstack.sleep.model.SleepLog
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -53,10 +57,34 @@ class JdbcSleepLogRepository(
             .addValue("wakeTime", sleepLog.wakeTime)
             .addValue("wakeTimeZone", sleepLog.wakeTimeZone.id)
 
-        val saved = jdbcTemplate.queryForObject(sql, params, rowMapper)
-            ?: throw IllegalStateException("INSERT RETURNING produced no row for userId=${sleepLog.userId}")
+        val saved = try {
+            jdbcTemplate.queryForObject(sql, params, rowMapper)
+        } catch (ex: DataIntegrityViolationException) {
+            throw translateConstraintViolation(ex, sleepLog.userId)
+        } ?: throw IllegalStateException("INSERT RETURNING produced no row for userId=${sleepLog.userId}")
         logger.debug { "Inserted sleep_log id=${saved.id} for userId=${saved.userId}" }
         return saved
+    }
+
+    /**
+     * Translates known PostgreSQL constraint violations to domain exceptions so callers
+     * see consistent error types. Unknown violations are re-thrown as-is.
+     */
+    private fun translateConstraintViolation(ex: DataIntegrityViolationException, userId: Long): RuntimeException {
+        return when (DbConstraints.extractConstraintName(ex)) {
+            DbConstraints.NO_OVERLAPPING_SLEEP -> {
+                logger.warn { "userId=$userId: DB constraint caught overlapping sleep log (concurrent insert)" }
+                ResourceConflictException("This sleep log overlaps with an existing entry.")
+            }
+            DbConstraints.WAKE_AFTER_BED -> {
+                logger.warn { "userId=$userId: DB constraint caught wake_after_bed" }
+                SleepLogInvalidException("Wake time must be after bed time.")
+            }
+            else -> {
+                logger.error(ex) { "userId=$userId: unexpected data integrity violation" }
+                ex
+            }
+        }
     }
 
     override fun findLatestSleepLogByUserId(userId: Long): SleepLog? {

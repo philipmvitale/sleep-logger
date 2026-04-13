@@ -27,6 +27,19 @@ class JdbcUserRepository(
         )
     }
 
+    override fun saveUser(user: User): User {
+        val sql = """
+            INSERT INTO users (timezone)
+            VALUES (:timezone)
+            RETURNING id, timezone
+        """.trimIndent()
+        val params = MapSqlParameterSource("timezone", user.timeZone.id)
+        val saved = jdbcTemplate.queryForObject(sql, params, rowMapper)
+            ?: throw IllegalStateException("INSERT RETURNING produced no row for user timezone=${user.timeZone}")
+        logger.debug { "Inserted user id=${saved.id}" }
+        return saved
+    }
+
     override fun findUserById(id: Long): User? {
         val sql = "SELECT id, timezone FROM users WHERE id = :id"
         val params = MapSqlParameterSource("id", id)

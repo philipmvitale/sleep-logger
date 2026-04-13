@@ -31,7 +31,8 @@ interface SleepService {
     fun getTodaySleepLog(userId: Long): SleepLog
 
     /**
-     * Computes aggregate sleep statistics for the given user over the last 30 days.
+     * Computes aggregate sleep statistics for the given user over the last 30 days
+     * (today and the 29 days before it).
      *
      * @param userId the ID of the user
      * @return a [SleepStats] containing average duration, average bed/wake times, and mood frequencies
