@@ -10,6 +10,12 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.Connection
 import javax.sql.DataSource
 
+/**
+ * Provides the PostgreSQL [DataSource] and JDBC template beans.
+ *
+ * Excluded from the `unittest` profile so that unit tests can run without
+ * a database (repositories are mocked via MockK).
+ */
 @Configuration
 @Profile("!$UNIT_TEST_PROFILE")
 class DatabaseConfiguration {
