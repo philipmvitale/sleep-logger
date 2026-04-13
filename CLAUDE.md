@@ -55,17 +55,21 @@ generated interfaces — never edit API interface or DTOs by hand; change the YA
 
 ### Layer Structure
 
-- **Controller** (`controller/SleepController.kt`) — implements generated API interface
-- **Service** (`service/SleepService.kt` / `SleepServiceImpl.kt`) — business logic, maps between domain model and
-  generated API DTOs.
-- **Repository** (`repository/SleepRepository.kt` / `JdbcSleepRepository.kt`) — SQL via `NamedParameterJdbcTemplate`
-- **Domain model** (`model/SleepLog.kt`, `model/Mood.kt`) — internal representation.
-- **Exception handling** (`controller/GlobalExceptionHandler.kt`) — translates domain exceptions to HTTP error
+- **Controller** (`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/controller/`) — implements generated API
+  interface, maps between models and generated DTOs
+- **Service** (`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/service/`) — business logic
+- **Repository** (`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/repository/`) — SQL via
+  `NamedParameterJdbcTemplate`
+- **Domain model** (`sleep/src/main/kotlin/com/noom/interview/fullstack/model/`) — internal representation.
+- **Exception handling** (
+  `sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/controller/GlobalExceptionHandler.kt`) — translates domain
+  exceptions to HTTP error
   responses.
 
 ### Database
 
 PostgreSQL with Flyway migrations in `sleep/src/main/resources/db/migration/`.
+Spring Configuration in `sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/db/DatabaseConfiguration.kt`.
 
 ### Testing
 

@@ -160,6 +160,7 @@ kover {
                         'com.noom.interview.fullstack.sleep.SleepApplicationKt',
                         'com.noom.interview.fullstack.sleep.api.*',
                         'com.noom.interview.fullstack.sleep.model.*',
+                        'com.noom.interview.fullstack.sleep.exception.*'
                 )
             }
         }
