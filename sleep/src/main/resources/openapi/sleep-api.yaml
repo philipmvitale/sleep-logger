@@ -170,6 +170,7 @@ components:
           example: "America/New_York"
         durationMinutes:
           type: integer
+          format: int64
           description: Total time in bed in minutes.
           example: 495
         mood:
@@ -194,6 +195,7 @@ components:
           example: "2024-01-15T00:00:00Z"
         averageDurationMinutes:
           type: integer
+          format: int64
           nullable: true
           description: Average total time in bed in minutes. Null when no logs exist in the period.
           example: 465

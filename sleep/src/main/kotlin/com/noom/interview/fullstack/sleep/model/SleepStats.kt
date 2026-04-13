@@ -15,7 +15,7 @@ import java.time.OffsetDateTime
 data class SleepStats(
     val dateFrom: OffsetDateTime,
     val dateTo: OffsetDateTime,
-    val averageDurationMinutes: Int?,
+    val averageDurationMinutes: Long?,
     val averageBedTime: LocalTime?,
     val averageWakeTime: LocalTime?,
     val moodFrequencies: Map<Mood, Int>
