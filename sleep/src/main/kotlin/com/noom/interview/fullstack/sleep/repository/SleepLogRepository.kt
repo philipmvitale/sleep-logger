@@ -12,7 +12,7 @@ interface SleepLogRepository {
      * Persists a new sleep log.
      *
      * @param sleepLog the sleep log to save
-     * @return the saved [SleepLog] with its generated ID and creation timestamp
+     * @return the saved [SleepLog] with its generated ID
      */
     fun saveSleepLog(sleepLog: SleepLog): SleepLog
 

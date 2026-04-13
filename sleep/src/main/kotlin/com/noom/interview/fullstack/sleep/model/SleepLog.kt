@@ -1,7 +1,6 @@
 package com.noom.interview.fullstack.sleep.model
 
 import java.time.Duration
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -13,7 +12,6 @@ import java.time.ZoneId
  * @property bedTimeZone the user's time zone at the time they went to bed
  * @property wakeTimeZone the user's time zone at the time they woke up
  * @property durationMinutes computed sleep duration derived from [bedTime] and [wakeTime]
- * @property createdAt server-side creation timestamp, `null` before persistence
  */
 data class SleepLog(
     val id: Long? = null,
@@ -22,8 +20,7 @@ data class SleepLog(
     val bedTime: OffsetDateTime,
     val bedTimeZone: ZoneId,
     val wakeTime: OffsetDateTime,
-    val wakeTimeZone: ZoneId,
-    val createdAt: Instant? = null
+    val wakeTimeZone: ZoneId
 ) {
     val durationMinutes: Int
         get() = Duration.between(bedTime, wakeTime).toMinutes().toInt()
