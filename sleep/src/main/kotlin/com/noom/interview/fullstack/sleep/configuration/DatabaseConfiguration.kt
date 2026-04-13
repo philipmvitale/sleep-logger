@@ -1,4 +1,4 @@
-package com.noom.interview.fullstack.sleep.db
+package com.noom.interview.fullstack.sleep.configuration
 
 import com.noom.interview.fullstack.sleep.SleepApplication.Companion.UNIT_TEST_PROFILE
 import org.springframework.beans.factory.annotation.Value
