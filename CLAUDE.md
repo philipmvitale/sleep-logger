@@ -34,7 +34,7 @@ cd sleep
 ./gradlew runKtlintCheck
 
 # Auto-fix lint issues
-./gradlew runKtlintFormat
+./gradlew runKtlintFormatOverIntegrationTestSourceSet runKtlintFormatOverKotlinScripts runKtlintFormatOverMainSourceSet runKtlintFormatOverTestSourceSet
 
 # Coverage report (Kover, enforces 90% minimum)
 ./gradlew koverVerify
