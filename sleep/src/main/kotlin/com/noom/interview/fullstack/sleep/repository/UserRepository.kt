@@ -8,6 +8,14 @@ import com.noom.interview.fullstack.sleep.model.User
 interface UserRepository {
 
     /**
+     * Persists a new user.
+     *
+     * @param user the user to save (the [User.id] field is ignored; the database generates the ID)
+     * @return the saved [User] with its generated ID
+     */
+    fun saveUser(user: User): User
+
+    /**
      * Finds a user by their unique identifier.
      *
      * @param id the user's ID

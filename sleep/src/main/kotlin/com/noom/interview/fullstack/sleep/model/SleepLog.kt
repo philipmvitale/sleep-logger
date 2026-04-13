@@ -23,5 +23,5 @@ data class SleepLog(
     val wakeTimeZone: ZoneId
 ) {
     val durationMinutes: Int
-        get() = Duration.between(bedTime, wakeTime).toMinutes().toInt()
+        get() = Math.toIntExact(Duration.between(bedTime, wakeTime).toMinutes())
 }

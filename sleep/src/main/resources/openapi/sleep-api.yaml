@@ -84,7 +84,7 @@ paths:
     get:
       operationId: getSleepStats
       summary: Get sleep statistics
-      description: Returns aggregated sleep statistics over the last 30 days.
+      description: Returns aggregated sleep statistics over the last 30 days (today and the 29 days before it).
       tags:
         - sleep
       parameters:
@@ -107,6 +107,7 @@ components:
       schema:
         type: integer
         format: int64
+        minimum: 1
 
   schemas:
     TestResponse:
@@ -179,34 +180,34 @@ components:
       required:
         - dateFrom
         - dateTo
-        - averageDurationMinutes
-        - averageBedTime
-        - averageWakeTime
         - moodFrequencies
       properties:
         dateFrom:
           type: string
           format: date-time
-          description: Start of the averaging period.
+          description: Start of the averaging period (inclusive).
           example: "2023-12-17T00:00:00Z"
         dateTo:
           type: string
           format: date-time
-          description: End of the averaging period.
+          description: End of the averaging period (exclusive).
           example: "2024-01-15T00:00:00Z"
         averageDurationMinutes:
           type: integer
-          description: Average total time in bed in minutes.
+          nullable: true
+          description: Average total time in bed in minutes. Null when no logs exist in the period.
           example: 465
         averageBedTime:
           type: string
           format: time
-          description: Average local time the user goes to bed.
+          nullable: true
+          description: Average local time the user goes to bed. Null when no logs exist in the period.
           example: "23:00:00"
         averageWakeTime:
           type: string
           format: time
-          description: Average local time the user wakes up.
+          nullable: true
+          description: Average local time the user wakes up. Null when no logs exist in the period.
           example: "06:45:00"
         moodFrequencies:
           $ref: '#/components/schemas/MoodFrequencies'

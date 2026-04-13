@@ -31,13 +31,10 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'io.github.oshai:kotlin-logging-jvm:5.1.4'
-    implementation 'javax.validation:validation-api:2.0.1.Final'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.mockk:mockk:1.13.13'
-    testImplementation 'org.testcontainers:testcontainers:1.21.4'
-    testImplementation 'org.testcontainers:junit-jupiter:1.21.4'
-    testImplementation 'org.testcontainers:postgresql:1.21.4'
 }
 
 tasks.withType(KotlinCompile) {
@@ -55,6 +52,7 @@ openApiGenerate {
     generatorName = 'kotlin-spring'
     inputSpec = "${projectDir}/src/main/resources/openapi/sleep-api.yaml"
     outputDir = "${project.layout.buildDirectory.get()}/generated/openapi"
+    cleanupOutput = true
     apiPackage = 'com.noom.interview.fullstack.sleep.api'
     modelPackage = 'com.noom.interview.fullstack.sleep.api.model'
     configOptions = [
@@ -122,9 +120,14 @@ testing {
                 implementation 'org.testcontainers:testcontainers:1.21.4'
                 implementation 'org.testcontainers:junit-jupiter:1.21.4'
                 implementation 'org.testcontainers:postgresql:1.21.4'
+                implementation 'com.ninja-squad:springmockk:3.1.2'
             }
         }
     }
+}
+
+configurations.named('integrationTestImplementation') {
+    extendsFrom(configurations.implementation, configurations.runtimeOnly)
 }
 
 tasks.named('check') {

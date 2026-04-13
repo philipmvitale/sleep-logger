@@ -28,7 +28,7 @@ cd sleep
 ./gradlew integrationTest --tests "com.noom.interview.fullstack.sleep.TestControllerIT"
 
 # Generate OpenAPI classes
-./gradlew generateOpenApi
+./gradlew openApiGenerate
 
 # Lint (ktlint)
 ./gradlew runKtlintCheck
@@ -60,11 +60,13 @@ generated interfaces — never edit API interface or DTOs by hand; change the YA
 - **Service** (`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/service/`) — business logic
 - **Repository** (`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/repository/`) — SQL via
   `NamedParameterJdbcTemplate`
-- **Domain model** (`sleep/src/main/kotlin/com/noom/interview/fullstack/model/`) — internal representation.
+- **Domain model** (`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/model/`) — internal representation.
+- **Exceptions** (`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/exception/`) — domain exceptions
+  (`ResourceNotFoundException`, `ResourceConflictException`, `SleepLogInvalidException`) and DB constraint
+  exceptions (DbConstraints.kt`).
 - **Exception handling** (
   `sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/controller/GlobalExceptionHandler.kt`) — translates domain
-  exceptions to HTTP error
-  responses.
+  exceptions to HTTP error responses.
 
 ### Database
 
@@ -75,5 +77,5 @@ Spring Configuration in `sleep/src/main/kotlin/com/noom/interview/fullstack/slee
 
 - **Unit tests** (`src/test/`) — use MockK for mocking, `@ActiveProfiles("unittest")` disables Flyway.
 - **Integration tests** (`src/it/`) — extend `AbstractIntegrationTest` which starts a PostgreSQL Testcontainers
-  instance. These run a full Spring context with `MockMvc`.
-- CI runs `./gradlew build sonar` which includes both test suites.
+  instance. These run a full Spring context with `MockMvc`. Uses SpringMockK for mocking within the Spring context.
+- GitHub Actions CI (`.github/workflows/build.yml`) runs `./gradlew build sonar` which includes both test suites.
