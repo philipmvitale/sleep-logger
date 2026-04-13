@@ -11,7 +11,7 @@ import java.time.ZoneId
  * @property id database-generated primary key, `null` before persistence
  * @property bedTimeZone the user's time zone at the time they went to bed
  * @property wakeTimeZone the user's time zone at the time they woke up
- * @property durationMinutes computed sleep duration derived from [bedTime] and [wakeTime]
+ * @property duration computed sleep duration derived from [bedTime] and [wakeTime]
  */
 data class SleepLog(
     val id: Long? = null,
@@ -22,6 +22,6 @@ data class SleepLog(
     val wakeTime: OffsetDateTime,
     val wakeTimeZone: ZoneId
 ) {
-    val durationMinutes: Int
-        get() = Math.toIntExact(Duration.between(bedTime, wakeTime).toMinutes())
+    val duration: Duration
+        get() = Duration.between(bedTime, wakeTime)
 }
