@@ -29,7 +29,7 @@ class GlobalExceptionHandler {
     fun handleNotFound(ex: ResourceNotFoundException): ResponseEntity<ErrorResponse> {
         logger.warn { "Resource not found: ${ex.message}" }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ErrorResponse(error = "Not Found", message = ex.message ?: "Resource not found.")
+            ErrorResponse(error = HttpStatus.NOT_FOUND.reasonPhrase, message = ex.message ?: "Resource not found.")
         )
     }
 
@@ -37,7 +37,7 @@ class GlobalExceptionHandler {
     fun handleConflict(ex: ResourceConflictException): ResponseEntity<ErrorResponse> {
         logger.warn { "Resource conflict: ${ex.message}" }
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
-            ErrorResponse(error = "Conflict", message = ex.message ?: "Resource already exists.")
+            ErrorResponse(error = HttpStatus.CONFLICT.reasonPhrase, message = ex.message ?: "Resource already exists.")
         )
     }
 
@@ -45,7 +45,7 @@ class GlobalExceptionHandler {
     fun handleInvalid(ex: SleepLogInvalidException): ResponseEntity<ErrorResponse> {
         logger.warn { "Invalid sleep log: ${ex.message}" }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = "Bad Request", message = ex.message ?: "Invalid sleep log.")
+            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = ex.message ?: "Invalid sleep log.")
         )
     }
 
@@ -53,7 +53,7 @@ class GlobalExceptionHandler {
     fun handleBadRequest(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
         logger.warn { "Malformed request body: ${ex.message}" }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = "Bad Request", message = "Invalid request body.")
+            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Invalid request body.")
         )
     }
 
@@ -61,7 +61,7 @@ class GlobalExceptionHandler {
     fun handleMissingHeader(ex: MissingRequestHeaderException): ResponseEntity<ErrorResponse> {
         logger.warn { "Missing request header: ${ex.message}" }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = "Bad Request", message = "Required header '${ex.headerName}' is missing.")
+            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Required header '${ex.headerName}' is missing.")
         )
     }
 
@@ -69,7 +69,7 @@ class GlobalExceptionHandler {
     fun handleMethodArgumentNotValid(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         logger.warn { "Method argument not valid: ${ex.message}" }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = "Bad Request", message = "Invalid request parameters.")
+            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Invalid request parameters.")
         )
     }
 
@@ -77,7 +77,7 @@ class GlobalExceptionHandler {
     fun handleConstraintViolation(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
         logger.warn { "Constraint violation: ${ex.message}" }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = "Bad Request", message = "Invalid request parameters.")
+            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Invalid request parameters.")
         )
     }
 
@@ -85,7 +85,7 @@ class GlobalExceptionHandler {
     fun handleUnexpected(ex: Exception): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "Unexpected error" }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            ErrorResponse(error = "Internal Server Error", message = "An unexpected error occurred.")
+            ErrorResponse(error = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase, message = "An unexpected error occurred.")
         )
     }
 }
