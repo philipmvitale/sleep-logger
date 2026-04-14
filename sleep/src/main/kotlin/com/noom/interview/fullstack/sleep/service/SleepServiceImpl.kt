@@ -19,6 +19,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.roundToLong
@@ -49,22 +50,22 @@ class SleepServiceImpl(
     override fun createTodaySleepLog(userId: Long, newSleepLog: NewSleepLog): SleepLog {
         val user = findUserOrThrow(userId)
         val sleepDuration = newSleepLog.duration
-        if (sleepDuration.isNegative || sleepDuration.isZero) {
-            logger.warn { "userId=$userId: bed time ${newSleepLog.bedTime} is not before wake time ${newSleepLog.wakeTime}" }
-            throw SleepLogInvalidException("Bed time must be before wake time")
+        validateSleepLog(!sleepDuration.isNegative && !sleepDuration.isZero) {
+            "userId=$userId: bed time ${newSleepLog.bedTime} is not before wake time ${newSleepLog.wakeTime}" to
+                "Bed time must be before wake time"
         }
-        if (sleepDuration < MINIMUM_SLEEP_DURATION) {
-            logger.warn { "userId=$userId: sleep duration ${sleepDuration.toMinutes()}min is below minimum of ${MINIMUM_SLEEP_DURATION.toMinutes()}min" }
-            throw SleepLogInvalidException("Sleep duration must be at least ${MINIMUM_SLEEP_DURATION.toMinutes()} minutes")
+        validateSleepLog(sleepDuration >= MINIMUM_SLEEP_DURATION) {
+            "userId=$userId: sleep duration ${sleepDuration.toMinutes()}min is below minimum of ${MINIMUM_SLEEP_DURATION.toMinutes()}min" to
+                "Sleep duration must be at least ${MINIMUM_SLEEP_DURATION.toMinutes()} minutes"
         }
-        if (sleepDuration >= MAXIMUM_SLEEP_DURATION) {
-            logger.warn { "userId=$userId: sleep duration exceeds 24 hours (bed=${newSleepLog.bedTime}, wake=${newSleepLog.wakeTime})" }
-            throw SleepLogInvalidException("Sleep duration must be less than 24 hours")
+        validateSleepLog(sleepDuration < MAXIMUM_SLEEP_DURATION) {
+            "userId=$userId: sleep duration exceeds 24 hours (bed=${newSleepLog.bedTime}, wake=${newSleepLog.wakeTime})" to
+                "Sleep duration must be less than 24 hours"
         }
         val startOfUserDay = startOfDayUtc(user.timeZone)
-        if (newSleepLog.wakeTime.isBefore(startOfUserDay)) {
-            logger.warn { "userId=$userId: wake time ${newSleepLog.wakeTime} is before start of user day $startOfUserDay" }
-            throw SleepLogInvalidException("Wake time must be today for the user's time zone")
+        validateSleepLog(!newSleepLog.wakeTime.isBefore(startOfUserDay)) {
+            "userId=$userId: wake time ${newSleepLog.wakeTime} is before start of user day $startOfUserDay" to
+                "Wake time must be today for the user's time zone"
         }
 
         // IMPORTANT: This overlap check only examines the latest log. It is safe ONLY because
@@ -157,6 +158,14 @@ class SleepServiceImpl(
     private fun findUserOrThrow(userId: Long): User =
         userRepository.findUserById(userId) ?: throw ResourceNotFoundException("User not found")
 
+    private inline fun validateSleepLog(condition: Boolean, lazyMessage: () -> Pair<String, String>) {
+        if (!condition) {
+            val (logMessage, errorMessage) = lazyMessage()
+            logger.warn { logMessage }
+            throw SleepLogInvalidException(errorMessage)
+        }
+    }
+
     /**
      * Returns the start of the day in the given time zone as an OffsetDateTime in UTC.
      *
@@ -185,24 +194,24 @@ class SleepServiceImpl(
      */
     private fun circularAverageTime(times: List<LocalTime>): LocalTime {
         require(times.isNotEmpty()) { "Cannot compute circular average of empty list" }
-        val secondsInDay = 24 * 60 * 60.0
+        val secondsInDay = 24L * 60 * 60
         // Shift the origin to noon so the midnight-crossing seam falls at noon,
         // where neither bed times nor wake times are expected to land.
-        val noonOffsetSeconds: Long = 12 * 60 * 60
+        val noonOffsetSeconds = 12L * 60 * 60
 
         var sinSum = 0.0
         var cosSum = 0.0
 
         for (time in times) {
-            val offsetSeconds = (time.toSecondOfDay() - noonOffsetSeconds).mod(secondsInDay.toLong())
-            val angle = 2.0 * Math.PI * offsetSeconds.toDouble() / secondsInDay
+            val offsetSeconds = (time.toSecondOfDay() - noonOffsetSeconds).mod(secondsInDay)
+            val angle = 2.0 * PI * offsetSeconds / secondsInDay
             sinSum += sin(angle)
             cosSum += cos(angle)
         }
 
         val avgAngle = atan2(sinSum, cosSum)
-        val avgOffsetSeconds = (avgAngle / (2.0 * Math.PI) * secondsInDay).roundToLong().mod(secondsInDay.toLong())
-        val avgSeconds = (avgOffsetSeconds + noonOffsetSeconds).mod(secondsInDay.toLong())
+        val avgOffsetSeconds = (avgAngle / (2.0 * PI) * secondsInDay).roundToLong().mod(secondsInDay)
+        val avgSeconds = (avgOffsetSeconds + noonOffsetSeconds).mod(secondsInDay)
 
         return LocalTime.ofSecondOfDay(avgSeconds)
     }

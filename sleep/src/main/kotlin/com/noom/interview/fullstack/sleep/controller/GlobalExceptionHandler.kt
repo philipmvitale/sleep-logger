@@ -28,64 +28,53 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleNotFound(ex: ResourceNotFoundException): ResponseEntity<ErrorResponse> {
         logger.warn { "Resource not found: ${ex.message}" }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ErrorResponse(error = HttpStatus.NOT_FOUND.reasonPhrase, message = ex.message ?: "Resource not found.")
-        )
+        return errorResponse(HttpStatus.NOT_FOUND, ex.message ?: "Resource not found.")
     }
 
     @ExceptionHandler(ResourceConflictException::class)
     fun handleConflict(ex: ResourceConflictException): ResponseEntity<ErrorResponse> {
         logger.warn { "Resource conflict: ${ex.message}" }
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-            ErrorResponse(error = HttpStatus.CONFLICT.reasonPhrase, message = ex.message ?: "Resource already exists.")
-        )
+        return errorResponse(HttpStatus.CONFLICT, ex.message ?: "Resource already exists.")
     }
 
     @ExceptionHandler(SleepLogInvalidException::class)
     fun handleInvalid(ex: SleepLogInvalidException): ResponseEntity<ErrorResponse> {
         logger.warn { "Invalid sleep log: ${ex.message}" }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = ex.message ?: "Invalid sleep log.")
-        )
+        return errorResponse(HttpStatus.BAD_REQUEST, ex.message ?: "Invalid sleep log.")
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleBadRequest(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
         logger.warn { "Malformed request body: ${ex.message}" }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Invalid request body.")
-        )
+        return errorResponse(HttpStatus.BAD_REQUEST, "Invalid request body.")
     }
 
     @ExceptionHandler(MissingRequestHeaderException::class)
     fun handleMissingHeader(ex: MissingRequestHeaderException): ResponseEntity<ErrorResponse> {
         logger.warn { "Missing request header: ${ex.message}" }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Required header '${ex.headerName}' is missing.")
-        )
+        return errorResponse(HttpStatus.BAD_REQUEST, "Required header '${ex.headerName}' is missing.")
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleMethodArgumentNotValid(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         logger.warn { "Method argument not valid: ${ex.message}" }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Invalid request parameters.")
-        )
+        return errorResponse(HttpStatus.BAD_REQUEST, "Invalid request parameters.")
     }
 
     @ExceptionHandler(ConstraintViolationException::class)
     fun handleConstraintViolation(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
         logger.warn { "Constraint violation: ${ex.message}" }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(error = HttpStatus.BAD_REQUEST.reasonPhrase, message = "Invalid request parameters.")
-        )
+        return errorResponse(HttpStatus.BAD_REQUEST, "Invalid request parameters.")
     }
 
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(ex: Exception): ResponseEntity<ErrorResponse> {
         logger.error(ex) { "Unexpected error" }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            ErrorResponse(error = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase, message = "An unexpected error occurred.")
-        )
+        return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.")
     }
+
+    private fun errorResponse(status: HttpStatus, message: String) =
+        ResponseEntity.status(status).body(
+            ErrorResponse(error = status.reasonPhrase, message = message)
+        )
 }

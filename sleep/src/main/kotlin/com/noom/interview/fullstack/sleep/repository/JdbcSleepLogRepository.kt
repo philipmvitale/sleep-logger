@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
-import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -30,7 +29,7 @@ class JdbcSleepLogRepository(
 ) : SleepLogRepository {
 
     /** Maps a `sleep_logs` row to a [SleepLog] domain object. */
-    private val rowMapper = RowMapper { rs: ResultSet, _: Int ->
+    private val rowMapper = RowMapper { rs, _ ->
         SleepLog(
             id = rs.getLong("id"),
             userId = rs.getLong("user_id"),
@@ -49,13 +48,16 @@ class JdbcSleepLogRepository(
             RETURNING id, user_id, mood, bed_time, bed_timezone, wake_time, wake_timezone
         """.trimIndent()
 
-        val params = MapSqlParameterSource()
-            .addValue("userId", sleepLog.userId)
-            .addValue("mood", sleepLog.mood.name)
-            .addValue("bedTime", sleepLog.bedTime)
-            .addValue("bedTimeZone", sleepLog.bedTimeZone.id)
-            .addValue("wakeTime", sleepLog.wakeTime)
-            .addValue("wakeTimeZone", sleepLog.wakeTimeZone.id)
+        val params = MapSqlParameterSource(
+            mapOf(
+                "userId" to sleepLog.userId,
+                "mood" to sleepLog.mood.name,
+                "bedTime" to sleepLog.bedTime,
+                "bedTimeZone" to sleepLog.bedTimeZone.id,
+                "wakeTime" to sleepLog.wakeTime,
+                "wakeTimeZone" to sleepLog.wakeTimeZone.id
+            )
+        )
 
         val saved = try {
             jdbcTemplate.queryForObject(sql, params, rowMapper)
@@ -112,10 +114,13 @@ class JdbcSleepLogRepository(
             ORDER BY wake_time DESC
         """.trimIndent()
 
-        val params = MapSqlParameterSource()
-            .addValue("userId", userId)
-            .addValue("fromStart", from)
-            .addValue("toEnd", to)
+        val params = MapSqlParameterSource(
+            mapOf(
+                "userId" to userId,
+                "fromStart" to from,
+                "toEnd" to to
+            )
+        )
 
         return jdbcTemplate.query(sql, params, rowMapper)
     }
