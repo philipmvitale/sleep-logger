@@ -260,6 +260,8 @@ class SleepControllerIT : AbstractIntegrationTest() {
                     .header("X-User-Id", userId)
             )
                 .andExpect(status().isOk)
+                .andExpect(jsonPath("$.dateFrom").value("2024-05-17T04:00:00Z"))
+                .andExpect(jsonPath("$.dateTo").value("2024-06-16T04:00:00Z"))
                 .andExpect(jsonPath("$.averageDurationMinutes").doesNotExist())
                 .andExpect(jsonPath("$.averageBedTime").doesNotExist())
                 .andExpect(jsonPath("$.averageWakeTime").doesNotExist())
