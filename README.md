@@ -25,7 +25,7 @@ breakdowns.
 - **Database:** PostgreSQL 13 with Flyway migrations
 - **Data access:** `NamedParameterJdbcTemplate` (no ORM)
 - **API contract:** OpenAPI 3.0 with code generation
-- **Build:** Gradle (Kotlin DSL)
+- **Build:** Gradle (Groovy DSL)
 - **Testing:** JUnit 5, MockK, Testcontainers, Kover (90% minimum coverage)
 - **CI:** GitHub Actions + SonarQube
 
