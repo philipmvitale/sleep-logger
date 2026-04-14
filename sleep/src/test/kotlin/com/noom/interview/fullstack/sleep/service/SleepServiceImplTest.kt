@@ -324,6 +324,7 @@ class SleepServiceImplTest {
 
             assertThat(result.id).isEqualTo(10L)
             assertThat(result.bedTimeZone).isEqualTo(nyZone)
+            assertThat(result.wakeTimeZone).isEqualTo(nyZone)
         }
     }
 
