@@ -38,6 +38,9 @@ cd sleep
 
 # Coverage report (Kover, enforces 90% minimum)
 ./gradlew koverVerify
+
+# Validate Mermaid diagrams in docs/architecture.md
+npx -p @mermaid-js/mermaid-cli mmdc -i docs/architecture.md -o /tmp/validation-check.md
 ```
 
 Run the full stack with Docker: `docker compose up --build` (Postgres on 5432, API on 8080).

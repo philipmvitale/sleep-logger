@@ -13,7 +13,12 @@ paths:
     post:
       operationId: createSleepLog
       summary: Create today's sleep log
-      description: Records details about the user's sleep.
+      description: >
+        Records details about the user's sleep. Note that this endpoint only allows sleep to be recorded for the
+        current day in the user's default time zone. This endpoint does not accept a time zone override at this
+        time, nor different time zones for bed and wake times. Any offset provided in the bed and wake time fields
+        are not used for any time calculations. Times are simply converted to UTC and associated with the
+        user's current default time zone when saved.
       tags:
         - sleep
       parameters:
@@ -46,7 +51,10 @@ paths:
     get:
       operationId: getSleepLog
       summary: Get today's sleep log
-      description: Returns details about the user's sleep.
+      description: >
+        Returns details about the user's sleep. Note that this endpoint only allows retrieval of sleep logs for the
+        current day in the user's default time zone. This endpoint does not accept a time zone override at this
+        time.
       tags:
         - sleep
       parameters:
@@ -69,7 +77,13 @@ paths:
     get:
       operationId: getSleepStats
       summary: Get sleep statistics
-      description: Returns aggregated sleep statistics over the last 30 days (today and the 29 days before it).
+      description: >
+        Returns aggregated sleep statistics over the last 30 days (today and the 29 days before it) for the user.
+        The average bed and wake times are derived by calculating the circular mean of each local times in the
+        specified period. The final average bed and wake times are displayed only as local times with no time
+        zone tag since aggregated results may have come from different time zones. Note that the circular
+        mean calculation assumes that the user sleeps a typical overnight schedule and may not be accurate for users
+        who sleep during the day. The average sleep duration will be accurate regardless of the user's sleep schedule.
       tags:
         - sleep
       parameters:
