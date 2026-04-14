@@ -174,6 +174,18 @@ class SleepControllerTest {
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
+
+        @Test
+        fun `returns 400 when mood value is not a valid enum`() {
+            mockMvc.perform(
+                post("/api/v1/sleep-log")
+                    .header("X-User-Id", userId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"bedTime":"2024-01-14T22:30:00Z","wakeTime":"2024-01-15T06:45:00Z","mood":"AMAZING"}""")
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+        }
     }
 
     @Nested
@@ -212,6 +224,26 @@ class SleepControllerTest {
         fun `returns 400 when X-User-Id header is missing`() {
             mockMvc.perform(
                 get("/api/v1/sleep-log")
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+        }
+
+        @Test
+        fun `returns 400 when X-User-Id is zero`() {
+            mockMvc.perform(
+                get("/api/v1/sleep-log")
+                    .header("X-User-Id", 0)
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+        }
+
+        @Test
+        fun `returns 400 when X-User-Id is negative`() {
+            mockMvc.perform(
+                get("/api/v1/sleep-log")
+                    .header("X-User-Id", -1)
             )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
@@ -276,6 +308,26 @@ class SleepControllerTest {
         fun `returns 400 when X-User-Id header is missing`() {
             mockMvc.perform(
                 get("/api/v1/sleep-stats")
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+        }
+
+        @Test
+        fun `returns 400 when X-User-Id is zero`() {
+            mockMvc.perform(
+                get("/api/v1/sleep-stats")
+                    .header("X-User-Id", 0)
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+        }
+
+        @Test
+        fun `returns 400 when X-User-Id is negative`() {
+            mockMvc.perform(
+                get("/api/v1/sleep-stats")
+                    .header("X-User-Id", -1)
             )
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
