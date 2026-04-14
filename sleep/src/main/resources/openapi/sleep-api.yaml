@@ -9,21 +9,6 @@ servers:
     description: Local development server
 
 paths:
-  /test:
-    get:
-      operationId: test
-      summary: A test endpoint.
-      description: Returns a test response.
-      tags:
-        - test
-      responses:
-        '200':
-          description: Test response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TestResponse'
-
   /api/v1/sleep-log:
     post:
       operationId: createSleepLog
@@ -110,16 +95,6 @@ components:
         minimum: 1
 
   schemas:
-    TestResponse:
-      type: object
-      required:
-        - testMessage
-      properties:
-        testMessage:
-          type: string
-          description: A test message.
-          example: Hello world!
-
     CreateSleepLogRequest:
       type: object
       required:
