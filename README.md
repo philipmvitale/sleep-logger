@@ -59,7 +59,7 @@ Requires a PostgreSQL instance at `localhost:5432` (or configure via `SPRING_DAT
 ## API
 
 The full API spec is rendered via Swagger UI on GitHub Pages:
-**https://philipmvitale.github.io/sleep-logger/**
+**https://philipmvitale.github.io/sleep-logger/swagger**
 
 The source contract lives in `sleep/src/main/resources/openapi/sleep-api.yaml`.
 A simple bash client wrapping cURL (`scripts/sleep-client.sh`) is provided for quick manual testing.
