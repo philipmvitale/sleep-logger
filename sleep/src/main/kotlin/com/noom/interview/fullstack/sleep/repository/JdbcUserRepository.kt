@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
-import java.sql.ResultSet
 import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {}
@@ -20,7 +19,7 @@ class JdbcUserRepository(
 ) : UserRepository {
 
     /** Maps a `users` row to a [User] domain object. */
-    private val rowMapper = RowMapper { rs: ResultSet, _: Int ->
+    private val rowMapper = RowMapper { rs, _ ->
         User(
             id = rs.getLong("id"),
             timeZone = ZoneId.of(rs.getString("timezone"))
