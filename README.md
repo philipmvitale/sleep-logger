@@ -58,7 +58,10 @@ Requires a PostgreSQL instance at `localhost:5432` (or configure via `SPRING_DAT
 
 ## API
 
-See `sleep/src/main/resources/openapi/sleep-api.yaml` for the full API contract and descriptions.  
+The full API spec is rendered via Swagger UI on GitHub Pages:
+**https://philipmvitale.github.io/sleep-logger/**
+
+The source contract lives in `sleep/src/main/resources/openapi/sleep-api.yaml`.
 A simple bash client wrapping cURL (`scripts/sleep-client.sh`) is provided for quick manual testing.
 A postman collection is also available at `resources/Sleep API.postman_collection.json` for testing.
 
