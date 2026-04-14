@@ -26,8 +26,8 @@ breakdowns.
 - **Data access:** `NamedParameterJdbcTemplate` (no ORM)
 - **API contract:** OpenAPI 3.0 with code generation
 - **Build:** Gradle (Kotlin DSL)
-- **CI:** GitHub Actions + SonarQube
 - **Testing:** JUnit 5, MockK, Testcontainers, Kover (90% minimum coverage)
+- **CI:** GitHub Actions + SonarQube
 
 ## Getting Started
 
@@ -35,6 +35,9 @@ breakdowns.
 
 - Docker and Docker Compose
 - JDK 17 (for local development)
+- cURL (for running CLI scripts)
+- jq (for running CLI scripts)
+- npm (for architecture diagram validation only)
 
 ### Run with Docker
 
@@ -55,7 +58,21 @@ Requires a PostgreSQL instance at `localhost:5432` (or configure via `SPRING_DAT
 
 ## API
 
-All endpoints require an `X-User-Id` header (integer) to identify the user.
+See `sleep/src/main/resources/openapi/sleep-api.yaml` for the full API contract and descriptions.  
+A simple bash client wrapping cURL (`scripts/sleep-client.sh`) is provided for quick manual testing.
+A postman collection is also available at `resources/Sleep API.postman_collection.json` for testing.
+
+All endpoints require an `X-User-Id` header to identify the user.
+
+The user id MUST belong to a user in the `users` table. A script (`scripts/seed-db.sh`) provides a user with ID 1 with
+30 days of data in `America/New_York`, and a user with ID 2 with no data in `America/Los_Angeles` that you can use to
+test the API.
+
+The user's default timezone at the time of creating a record (not the offset in the provided ISO-8601
+timestamp) is used to persist the time zone / offset needed for local time calculations as all times are stored in UTC.
+
+There is no API to create or modify users, but you can modify the `users` table directly in the database to use
+different time zones.
 
 ### Endpoints
 
@@ -142,7 +159,7 @@ A bash script is included for quick manual testing:
 # Specify a different user
 ./scripts/sleep-client.sh -u 2 today
 
-# Unseed DB
+# Un-seed DB
 ./scripts/unseed-db.sh
 ```
 
@@ -169,7 +186,7 @@ sleep/
 ```
 
 The API contract lives in `sleep-api.yaml`. The OpenAPI Generator plugin produces request/response DTOs and controller
-interfaces at build time -- controllers implement these generated interfaces directly.
+interfaces at build time – controllers implement these generated interfaces directly.
 
 ## Build & Test
 
@@ -192,17 +209,43 @@ cd sleep
 ./gradlew koverVerify
 ```
 
+## CI
+
+GitHub Actions runs on every push to `main` and on pull requests (`.github/workflows/build.yml`). The pipeline executes
+`./gradlew build sonar`, which compiles the project, runs unit tests, integration tests,
+enforces linting, and minimum code coverage, before publishing the results to SonarCloud. Branch protections
+on `main` require both a passing build and SonarCloud quality gate before merging.
+
+CD / deployment is out of scope for this project.
+
+## Architecture
+
+See [docs/architecture.md](docs/architecture.md) for detailed architecture diagrams including:
+
+- **Layer/component diagram** — OpenAPI generation, controller, service, repository, and database layers
+- **Database ER diagram** — tables, relationships, constraints, and indexes
+- **Request flow** — sequence diagram tracing a create-sleep-log request through all layers
+
+Validate the Mermaid diagrams with:
+
+```bash
+npx -p @mermaid-js/mermaid-cli mmdc -i docs/architecture.md -o /tmp/validation-check.md
+```
+
 ## Design Decisions
 
 - **API-first:** The OpenAPI spec is the single source of truth for the API contract. DTOs and interfaces are generated,
-  not hand-written.
+  not handwritten.
 - **No ORM:** Uses Spring JDBC directly for full control over queries and transparent SQL.
 - **Circular mean for time averaging:** Bed/wake time averages use circular-mean calculations to correctly handle times
   crossing midnight.
 - **Timezone-aware storage:** Bed and wake times store their original timezone offsets, preserving the user's local time
   context.
 - **Flyway migrations:** Schema changes are versioned and applied automatically on startup.
+- **AuthN/AuthZ:** AuthN/AuthZ is out of scope for this project. While this project contains production-grade
+  code, it should absolutely not be used in production as-is. Users are simply identified by their database ID in a
+  header for this assignment.
 
 ## Original Assignment
 
-See [ASSIGNMENT.md](ASSIGNMENT.md) for the original assignment prompt.
+See [ASSIGNMENT.md](./docs/ASSIGNMENT.md) for the original assignment prompt.
