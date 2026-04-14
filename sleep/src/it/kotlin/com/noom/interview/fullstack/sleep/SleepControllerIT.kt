@@ -176,6 +176,21 @@ class SleepControllerIT : AbstractIntegrationTest() {
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Sleep duration must be less than 24 hours"))
         }
+
+        @Test
+        fun `returns 404 when user does not exist`() {
+            val bedTime = todayBedTime()
+            val wakeTime = todayWakeTime()
+
+            mockMvc.perform(
+                post("/api/v1/sleep-log")
+                    .header("X-User-Id", 999999L)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
+            )
+                .andExpect(status().isNotFound)
+                .andExpect(jsonPath("$.error").value("Not Found"))
+        }
     }
 
     @Nested
@@ -222,6 +237,16 @@ class SleepControllerIT : AbstractIntegrationTest() {
                     .header("X-User-Id", userId)
             )
                 .andExpect(status().isNotFound)
+        }
+
+        @Test
+        fun `returns 404 when user does not exist`() {
+            mockMvc.perform(
+                get("/api/v1/sleep-log")
+                    .header("X-User-Id", 999999L)
+            )
+                .andExpect(status().isNotFound)
+                .andExpect(jsonPath("$.error").value("Not Found"))
         }
     }
 
@@ -333,6 +358,16 @@ class SleepControllerIT : AbstractIntegrationTest() {
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.averageDurationMinutes").doesNotExist())
                 .andExpect(jsonPath("$.moodFrequencies.badFrequency").value(0))
+        }
+
+        @Test
+        fun `returns 404 when user does not exist`() {
+            mockMvc.perform(
+                get("/api/v1/sleep-stats")
+                    .header("X-User-Id", 999999L)
+            )
+                .andExpect(status().isNotFound)
+                .andExpect(jsonPath("$.error").value("Not Found"))
         }
     }
 
