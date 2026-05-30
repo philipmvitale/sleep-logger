@@ -109,7 +109,7 @@ class JdbcSleepLogRepositoryTest {
         @Test
         fun `throws IllegalStateException when RETURNING produces no row`() {
             every {
-                jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog>>())
+                jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog?>>())
             } returns null
 
             assertThatThrownBy { repository.saveSleepLog(buildSleepLog()) }

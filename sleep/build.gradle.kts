@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     alias(libs.plugins.spring.boot)
-    alias(libs.plugins.spring.dependency)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.kover)
@@ -32,17 +32,18 @@ dependencyLocking {
 }
 
 dependencies {
-    implementation(libs.spring.boot.starter.web)
+    implementation(platform(SpringBootPlugin.BOM_COORDINATES))
+    implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.jdbc)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.jackson.module.kotlin)
-    implementation(libs.flyway.core)
+    implementation(libs.spring.boot.starter.flyway)
     implementation(libs.flyway.database.postgresql)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.logging)
     runtimeOnly(libs.postgresql)
-    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.mockk)
 }
 
@@ -74,7 +75,7 @@ openApiGenerate {
             "interfaceOnly" to "true",
             "useTags" to "true",
             "documentationProvider" to "none",
-            "useSpringBoot3" to "true",
+            "useSpringBoot4" to "true",
             "exceptionHandler" to "false",
             "enumPropertyNaming" to "UPPERCASE",
             "serviceInterface" to "false",
@@ -131,7 +132,8 @@ testing {
             }
             dependencies {
                 implementation(project())
-                implementation(libs.spring.boot.starter.test)
+                implementation(platform(SpringBootPlugin.BOM_COORDINATES))
+                implementation(libs.spring.boot.starter.webmvc.test)
                 implementation(libs.testcontainers)
                 implementation(libs.testcontainers.junit)
                 implementation(libs.testcontainers.postgresql)
