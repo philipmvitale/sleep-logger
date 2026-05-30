@@ -5,6 +5,7 @@ import com.noom.interview.fullstack.sleep.exception.ResourceConflictException
 import com.noom.interview.fullstack.sleep.exception.ResourceNotFoundException
 import com.noom.interview.fullstack.sleep.exception.SleepLogInvalidException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -12,7 +13,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import javax.validation.ConstraintViolationException
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,7 +24,6 @@ private val logger = KotlinLogging.logger {}
  */
 @RestControllerAdvice
 class GlobalExceptionHandler {
-
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleNotFound(ex: ResourceNotFoundException): ResponseEntity<ErrorResponse> {
         logger.warn { "Resource not found: ${ex.message}" }
@@ -73,8 +72,10 @@ class GlobalExceptionHandler {
         return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.")
     }
 
-    private fun errorResponse(status: HttpStatus, message: String) =
-        ResponseEntity.status(status).body(
-            ErrorResponse(error = status.reasonPhrase, message = message)
-        )
+    private fun errorResponse(
+        status: HttpStatus,
+        message: String,
+    ) = ResponseEntity.status(status).body(
+        ErrorResponse(error = status.reasonPhrase, message = message),
+    )
 }

@@ -38,7 +38,6 @@ import com.noom.interview.fullstack.sleep.api.model.Mood as ApiMood
 @ActiveProfiles("unittest")
 @Import(SleepControllerTest.Config::class)
 class SleepControllerTest {
-
     @TestConfiguration
     class Config {
         @Bean
@@ -58,26 +57,26 @@ class SleepControllerTest {
 
     @Nested
     inner class CreateSleepLog {
-
         @Test
         fun `returns 201 with sleep log response`() {
-            val request = CreateSleepLogRequest(
-                bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
-                wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
-                mood = ApiMood.GOOD
-            )
+            val request =
+                CreateSleepLogRequest(
+                    bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
+                    wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
+                    mood = ApiMood.GOOD,
+                )
             val sleepLog = buildSleepLog()
             val captured = slot<NewSleepLog>()
 
             every { sleepService.createTodaySleepLog(userId, capture(captured)) } returns sleepLog
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            )
-                .andExpect(status().isCreated)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)),
+                ).andExpect(status().isCreated)
                 .andExpect(jsonPath("$.bedTime").value("2024-01-14T22:30:00Z"))
                 .andExpect(jsonPath("$.wakeTime").value("2024-01-15T06:45:00Z"))
                 .andExpect(jsonPath("$.durationMinutes").value(495))
@@ -90,118 +89,121 @@ class SleepControllerTest {
 
         @Test
         fun `returns 409 when sleep log already exists`() {
-            val request = CreateSleepLogRequest(
-                bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
-                wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
-                mood = ApiMood.GOOD
-            )
+            val request =
+                CreateSleepLogRequest(
+                    bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
+                    wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
+                    mood = ApiMood.GOOD,
+                )
 
             every { sleepService.createTodaySleepLog(userId, any<NewSleepLog>()) } throws
                 ResourceConflictException("A sleep log already exists for today.")
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            )
-                .andExpect(status().isConflict)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)),
+                ).andExpect(status().isConflict)
                 .andExpect(jsonPath("$.error").value("Conflict"))
                 .andExpect(jsonPath("$.message").value("A sleep log already exists for today."))
         }
 
         @Test
         fun `returns 400 when request body is invalid`() {
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"invalid\": true}")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"invalid\": true}"),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when X-User-Id header is missing`() {
-            val request = CreateSleepLogRequest(
-                bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
-                wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
-                mood = ApiMood.GOOD
-            )
+            val request =
+                CreateSleepLogRequest(
+                    bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
+                    wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
+                    mood = ApiMood.GOOD,
+                )
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when X-User-Id is zero`() {
-            val request = CreateSleepLogRequest(
-                bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
-                wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
-                mood = ApiMood.GOOD
-            )
+            val request =
+                CreateSleepLogRequest(
+                    bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
+                    wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
+                    mood = ApiMood.GOOD,
+                )
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", 0)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", 0)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when X-User-Id is negative`() {
-            val request = CreateSleepLogRequest(
-                bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
-                wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
-                mood = ApiMood.GOOD
-            )
+            val request =
+                CreateSleepLogRequest(
+                    bedTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
+                    wakeTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
+                    mood = ApiMood.GOOD,
+                )
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", -1)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", -1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when mood value is not a valid enum`() {
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"2024-01-14T22:30:00Z","wakeTime":"2024-01-15T06:45:00Z","mood":"AMAZING"}""")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"2024-01-14T22:30:00Z","wakeTime":"2024-01-15T06:45:00Z","mood":"AMAZING"}"""),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
     }
 
     @Nested
     inner class GetLastNightSleep {
-
         @Test
         fun `returns 200 with sleep log response`() {
             val sleepLog = buildSleepLog()
 
             every { sleepService.getTodaySleepLog(userId) } returns sleepLog
 
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.durationMinutes").value(495))
                 .andExpect(jsonPath("$.mood").value("GOOD"))
         }
@@ -211,66 +213,66 @@ class SleepControllerTest {
             every { sleepService.getTodaySleepLog(userId) } throws
                 ResourceNotFoundException("No sleep log found for today.")
 
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isNotFound)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value("No sleep log found for today."))
         }
 
         @Test
         fun `returns 400 when X-User-Id header is missing`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log"),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when X-User-Id is zero`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", 0)
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", 0),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when X-User-Id is negative`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", -1)
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", -1),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
     }
 
     @Nested
     inner class GetSleepAverages {
-
         @Test
         fun `returns 200 with averages response`() {
-            val stats = SleepStats(
-                dateFrom = OffsetDateTime.of(2023, 12, 17, 0, 0, 0, 0, ZoneOffset.UTC),
-                dateTo = OffsetDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC),
-                averageDurationMinutes = 465,
-                averageBedTime = LocalTime.of(23, 0),
-                averageWakeTime = LocalTime.of(6, 45),
-                moodFrequencies = mapOf(Mood.BAD to 5, Mood.OK to 12, Mood.GOOD to 13)
-            )
+            val stats =
+                SleepStats(
+                    dateFrom = OffsetDateTime.of(2023, 12, 17, 0, 0, 0, 0, ZoneOffset.UTC),
+                    dateTo = OffsetDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC),
+                    averageDurationMinutes = 465,
+                    averageBedTime = LocalTime.of(23, 0),
+                    averageWakeTime = LocalTime.of(6, 45),
+                    moodFrequencies = mapOf(Mood.BAD to 5, Mood.OK to 12, Mood.GOOD to 13),
+                )
 
             every { sleepService.getSleepStats(userId) } returns stats
 
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.dateFrom").value("2023-12-17T00:00:00Z"))
                 .andExpect(jsonPath("$.dateTo").value("2024-01-15T00:00:00Z"))
                 .andExpect(jsonPath("$.averageDurationMinutes").value(465))
@@ -283,22 +285,23 @@ class SleepControllerTest {
 
         @Test
         fun `returns 200 with null averages when no logs exist`() {
-            val stats = SleepStats(
-                dateFrom = OffsetDateTime.of(2023, 12, 17, 0, 0, 0, 0, ZoneOffset.UTC),
-                dateTo = OffsetDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC),
-                averageDurationMinutes = null,
-                averageBedTime = null,
-                averageWakeTime = null,
-                moodFrequencies = emptyMap()
-            )
+            val stats =
+                SleepStats(
+                    dateFrom = OffsetDateTime.of(2023, 12, 17, 0, 0, 0, 0, ZoneOffset.UTC),
+                    dateTo = OffsetDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC),
+                    averageDurationMinutes = null,
+                    averageBedTime = null,
+                    averageWakeTime = null,
+                    moodFrequencies = emptyMap(),
+                )
 
             every { sleepService.getSleepStats(userId) } returns stats
 
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.averageDurationMinutes").doesNotExist())
                 .andExpect(jsonPath("$.averageBedTime").doesNotExist())
                 .andExpect(jsonPath("$.averageWakeTime").doesNotExist())
@@ -306,51 +309,52 @@ class SleepControllerTest {
 
         @Test
         fun `returns 400 when X-User-Id header is missing`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats"),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when X-User-Id is zero`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", 0)
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", 0),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `returns 400 when X-User-Id is negative`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", -1)
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", -1),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
         }
 
         @Test
         fun `delegates to service with correct user id`() {
-            val stats = SleepStats(
-                dateFrom = OffsetDateTime.of(2023, 12, 17, 0, 0, 0, 0, ZoneOffset.UTC),
-                dateTo = OffsetDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC),
-                averageDurationMinutes = null,
-                averageBedTime = null,
-                averageWakeTime = null,
-                moodFrequencies = emptyMap()
-            )
+            val stats =
+                SleepStats(
+                    dateFrom = OffsetDateTime.of(2023, 12, 17, 0, 0, 0, 0, ZoneOffset.UTC),
+                    dateTo = OffsetDateTime.of(2024, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC),
+                    averageDurationMinutes = null,
+                    averageBedTime = null,
+                    averageWakeTime = null,
+                    moodFrequencies = emptyMap(),
+                )
 
             every { sleepService.getSleepStats(99L) } returns stats
 
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", 99L)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", 99L),
+                ).andExpect(status().isOk)
 
             verify { sleepService.getSleepStats(99L) }
         }
@@ -359,7 +363,7 @@ class SleepControllerTest {
     private fun buildSleepLog(
         bedTime: OffsetDateTime = OffsetDateTime.of(2024, 1, 14, 22, 30, 0, 0, ZoneOffset.UTC),
         wakeTime: OffsetDateTime = OffsetDateTime.of(2024, 1, 15, 6, 45, 0, 0, ZoneOffset.UTC),
-        mood: Mood = Mood.GOOD
+        mood: Mood = Mood.GOOD,
     ) = SleepLog(
         id = 1L,
         userId = userId,
@@ -367,6 +371,6 @@ class SleepControllerTest {
         bedTimeZone = ZoneId.of("America/New_York"),
         wakeTime = wakeTime,
         wakeTimeZone = ZoneId.of("America/New_York"),
-        mood = mood
+        mood = mood,
     )
 }

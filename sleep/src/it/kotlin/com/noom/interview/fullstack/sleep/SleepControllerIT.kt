@@ -25,7 +25,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 class SleepControllerIT : AbstractIntegrationTest() {
-
     companion object {
         val FIXED_INSTANT: Instant = Instant.parse("2024-06-15T12:00:00Z")
         val TODAY: LocalDate = LocalDate.ofInstant(FIXED_INSTANT, ZoneOffset.UTC)
@@ -62,19 +61,18 @@ class SleepControllerIT : AbstractIntegrationTest() {
 
     @Nested
     inner class CreateSleepLog {
-
         @Test
         fun `returns 201 and persists sleep log`() {
             val bedTime = todayBedTime()
             val wakeTime = todayWakeTime()
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isCreated)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isCreated)
                 .andExpect(jsonPath("$.durationMinutes").value(495))
                 .andExpect(jsonPath("$.mood").value("GOOD"))
         }
@@ -84,36 +82,36 @@ class SleepControllerIT : AbstractIntegrationTest() {
             val bedTime = todayBedTime()
             val wakeTime = todayWakeTime()
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isCreated)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isCreated)
 
             val bedTime2 = utcDateTime(TODAY.minusDays(1), 23, 0)
             val wakeTime2 = utcDateTime(TODAY, 7, 0)
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime2","wakeTime":"$wakeTime2","mood":"OK"}""")
-            )
-                .andExpect(status().isConflict)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime2","wakeTime":"$wakeTime2","mood":"OK"}"""),
+                ).andExpect(status().isConflict)
                 .andExpect(jsonPath("$.error").value("Conflict"))
         }
 
         @Test
         fun `returns 400 when request body is missing required fields`() {
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"2024-01-14T22:30:00Z"}""")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"2024-01-14T22:30:00Z"}"""),
+                ).andExpect(status().isBadRequest)
         }
 
         @Test
@@ -121,12 +119,12 @@ class SleepControllerIT : AbstractIntegrationTest() {
             val bedTime = todayBedTime()
             val wakeTime = todayWakeTime()
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isBadRequest)
         }
 
         @Test
@@ -134,13 +132,13 @@ class SleepControllerIT : AbstractIntegrationTest() {
             val bedTime = utcDateTime(TODAY, 8, 0)
             val wakeTime = utcDateTime(TODAY, 6, 0)
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Bed time must be before wake time"))
         }
@@ -150,13 +148,13 @@ class SleepControllerIT : AbstractIntegrationTest() {
             val bedTime = utcDateTime(TODAY, 6, 0)
             val wakeTime = utcDateTime(TODAY, 6, 20)
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"OK"}""")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"OK"}"""),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Sleep duration must be at least 30 minutes"))
         }
@@ -166,13 +164,13 @@ class SleepControllerIT : AbstractIntegrationTest() {
             val bedTime = utcDateTime(TODAY.minusDays(2), 5, 0)
             val wakeTime = utcDateTime(TODAY, 6, 0)
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isBadRequest)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Sleep duration must be less than 24 hours"))
         }
@@ -182,49 +180,48 @@ class SleepControllerIT : AbstractIntegrationTest() {
             val bedTime = todayBedTime()
             val wakeTime = todayWakeTime()
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", 999999L)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isNotFound)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", 999999L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.error").value("Not Found"))
         }
     }
 
     @Nested
     inner class GetLastNightSleep {
-
         @Test
         fun `returns 200 with sleep log after creating one`() {
             val bedTime = utcDateTime(TODAY.minusDays(1), 23, 0)
             val wakeTime = utcDateTime(TODAY, 7, 30)
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"OK"}""")
-            )
-                .andExpect(status().isCreated)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"OK"}"""),
+                ).andExpect(status().isCreated)
 
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.mood").value("OK"))
                 .andExpect(jsonPath("$.durationMinutes").value(510))
         }
 
         @Test
         fun `returns 404 when no sleep log exists`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isNotFound)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.error").value("Not Found"))
         }
 
@@ -232,34 +229,33 @@ class SleepControllerIT : AbstractIntegrationTest() {
         fun `does not return another user's sleep log`() {
             createSleepLogForUser2()
 
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isNotFound)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isNotFound)
         }
 
         @Test
         fun `returns 404 when user does not exist`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-log")
-                    .header("X-User-Id", 999999L)
-            )
-                .andExpect(status().isNotFound)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-log")
+                        .header("X-User-Id", 999999L),
+                ).andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.error").value("Not Found"))
         }
     }
 
     @Nested
     inner class GetSleepAverages {
-
         @Test
         fun `returns 200 with null averages when no logs exist`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.dateFrom").value("2024-05-17T04:00:00Z"))
                 .andExpect(jsonPath("$.dateTo").value("2024-06-16T04:00:00Z"))
                 .andExpect(jsonPath("$.averageDurationMinutes").doesNotExist())
@@ -275,19 +271,19 @@ class SleepControllerIT : AbstractIntegrationTest() {
             val bedTime = todayBedTime()
             val wakeTime = todayWakeTime()
 
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isCreated)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isCreated)
 
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.averageDurationMinutes").value(495))
                 .andExpect(jsonPath("$.moodFrequencies.goodFrequency").value(1))
                 .andExpect(jsonPath("$.moodFrequencies.okFrequency").value(0))
@@ -313,8 +309,8 @@ class SleepControllerIT : AbstractIntegrationTest() {
                     bedTime = day1Bed,
                     bedTimeZone = nyZone,
                     wakeTime = day1Wake,
-                    wakeTimeZone = nyZone
-                )
+                    wakeTimeZone = nyZone,
+                ),
             )
             sleepLogRepository.saveSleepLog(
                 SleepLog(
@@ -323,26 +319,26 @@ class SleepControllerIT : AbstractIntegrationTest() {
                     bedTime = day2Bed,
                     bedTimeZone = nyZone,
                     wakeTime = day2Wake,
-                    wakeTimeZone = nyZone
-                )
+                    wakeTimeZone = nyZone,
+                ),
             )
 
             val bedTime = todayBedTime()
             val wakeTime = todayWakeTime()
-            mockMvc.perform(
-                post("/api/v1/sleep-log")
-                    .header("X-User-Id", userId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}""")
-            )
-                .andExpect(status().isCreated)
+            mockMvc
+                .perform(
+                    post("/api/v1/sleep-log")
+                        .header("X-User-Id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"GOOD"}"""),
+                ).andExpect(status().isCreated)
 
             // avg duration = (480 + 480 + 495) / 3 = 485
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.averageDurationMinutes").value(485))
                 .andExpect(jsonPath("$.moodFrequencies.goodFrequency").value(2))
                 .andExpect(jsonPath("$.moodFrequencies.okFrequency").value(1))
@@ -353,28 +349,34 @@ class SleepControllerIT : AbstractIntegrationTest() {
         fun `does not include another user's logs in averages`() {
             createSleepLogForUser2()
 
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", userId)
-            )
-                .andExpect(status().isOk)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", userId),
+                ).andExpect(status().isOk)
                 .andExpect(jsonPath("$.averageDurationMinutes").doesNotExist())
                 .andExpect(jsonPath("$.moodFrequencies.badFrequency").value(0))
         }
 
         @Test
         fun `returns 404 when user does not exist`() {
-            mockMvc.perform(
-                get("/api/v1/sleep-stats")
-                    .header("X-User-Id", 999999L)
-            )
-                .andExpect(status().isNotFound)
+            mockMvc
+                .perform(
+                    get("/api/v1/sleep-stats")
+                        .header("X-User-Id", 999999L),
+                ).andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.error").value("Not Found"))
         }
     }
 
-    private fun utcDateTime(date: LocalDate, hour: Int, minute: Int): String =
-        date.atTime(hour, minute).atOffset(ZoneOffset.UTC)
+    private fun utcDateTime(
+        date: LocalDate,
+        hour: Int,
+        minute: Int,
+    ): String =
+        date
+            .atTime(hour, minute)
+            .atOffset(ZoneOffset.UTC)
             .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
     private fun todayBedTime(): String = utcDateTime(TODAY.minusDays(1), 22, 30)
@@ -384,17 +386,26 @@ class SleepControllerIT : AbstractIntegrationTest() {
     private fun createSleepLogForUser2() {
         val laZone = ZoneId.of("America/Los_Angeles")
         val todayLA = LocalDate.ofInstant(FIXED_INSTANT, laZone)
-        val bedTime = todayLA.minusDays(1).atTime(22, 0).atZone(laZone).toOffsetDateTime()
-            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        val wakeTime = todayLA.atTime(6, 0).atZone(laZone).toOffsetDateTime()
-            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val bedTime =
+            todayLA
+                .minusDays(1)
+                .atTime(22, 0)
+                .atZone(laZone)
+                .toOffsetDateTime()
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val wakeTime =
+            todayLA
+                .atTime(6, 0)
+                .atZone(laZone)
+                .toOffsetDateTime()
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
-        mockMvc.perform(
-            post("/api/v1/sleep-log")
-                .header("X-User-Id", user2Id)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"BAD"}""")
-        )
-            .andExpect(status().isCreated)
+        mockMvc
+            .perform(
+                post("/api/v1/sleep-log")
+                    .header("X-User-Id", user2Id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"bedTime":"$bedTime","wakeTime":"$wakeTime","mood":"BAD"}"""),
+            ).andExpect(status().isCreated)
     }
 }

@@ -7,7 +7,6 @@ import java.time.OffsetDateTime
  * Repository for persisting and querying [SleepLog] records.
  */
 interface SleepLogRepository {
-
     /**
      * Persists a new sleep log.
      *
@@ -32,5 +31,9 @@ interface SleepLogRepository {
      * @param to the end of the wake-time range (exclusive)
      * @return a list of matching [SleepLog] records, possibly empty
      */
-    fun findSleepLogsByUserIdAndWakeTimeRange(userId: Long, from: OffsetDateTime, to: OffsetDateTime): List<SleepLog>
+    fun findSleepLogsByUserIdAndWakeTimeRange(
+        userId: Long,
+        from: OffsetDateTime,
+        to: OffsetDateTime,
+    ): List<SleepLog>
 }

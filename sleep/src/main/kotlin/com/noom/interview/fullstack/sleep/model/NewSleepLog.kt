@@ -12,7 +12,7 @@ import java.time.OffsetDateTime
 data class NewSleepLog(
     val bedTime: OffsetDateTime,
     val wakeTime: OffsetDateTime,
-    val mood: Mood
+    val mood: Mood,
 ) {
     val duration: Duration
         get() = Duration.between(bedTime, wakeTime)

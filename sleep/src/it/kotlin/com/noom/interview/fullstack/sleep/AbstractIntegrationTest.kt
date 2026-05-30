@@ -19,21 +19,23 @@ abstract class AbstractIntegrationTest {
 
     companion object {
         @JvmStatic
-        val POSTGRESQL_CONTAINER = PostgreSQLContainer<Nothing>("postgres:13-alpine").apply {
-            withDatabaseName("postgres")
-            withUsername("user")
-            withPassword("password")
-            start()
-        }
+        val POSTGRESQL_CONTAINER =
+            PostgreSQLContainer<Nothing>("postgres:17-alpine").apply {
+                withDatabaseName("postgres")
+                withUsername("user")
+                withPassword("password")
+                start()
+            }
     }
 
     internal class Initializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
         override fun initialize(configurableApplicationContext: ConfigurableApplicationContext) {
-            TestPropertyValues.of(
-                "spring.datasource.url=${POSTGRESQL_CONTAINER.jdbcUrl}",
-                "spring.datasource.username=${POSTGRESQL_CONTAINER.username}",
-                "spring.datasource.password=${POSTGRESQL_CONTAINER.password}"
-            ).applyTo(configurableApplicationContext.environment)
+            TestPropertyValues
+                .of(
+                    "spring.datasource.url=${POSTGRESQL_CONTAINER.jdbcUrl}",
+                    "spring.datasource.username=${POSTGRESQL_CONTAINER.username}",
+                    "spring.datasource.password=${POSTGRESQL_CONTAINER.password}",
+                ).applyTo(configurableApplicationContext.environment)
         }
     }
 }

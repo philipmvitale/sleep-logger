@@ -29,7 +29,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 class SleepServiceImplTest {
-
     private val repository: SleepLogRepository = mockk()
     private val userRepository: UserRepository = mockk()
     private val fixedInstant: Instant = Instant.parse("2024-01-15T12:00:00Z")
@@ -48,14 +47,14 @@ class SleepServiceImplTest {
 
     @Nested
     inner class CreateSleepLog {
-
         @Test
         fun `creates sleep log with midnight-crossing bed time`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(22, 30),
-                wakeTime = todayStart.at(6, 45),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(22, 30),
+                    wakeTime = todayStart.at(6, 45),
+                    mood = Mood.GOOD,
+                )
             stubSuccessfulSave()
 
             val result = service.createTodaySleepLog(42L, newSleepLog)
@@ -68,11 +67,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `creates sleep log without midnight crossing`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.at(1, 0),
-                wakeTime = todayStart.at(6, 45),
-                mood = Mood.OK
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.at(1, 0),
+                    wakeTime = todayStart.at(6, 45),
+                    mood = Mood.OK,
+                )
             stubSuccessfulSave()
 
             val result = service.createTodaySleepLog(42L, newSleepLog)
@@ -83,11 +83,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws ResourceConflictException when log exists for today`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(22, 30),
-                wakeTime = todayStart.at(6, 45),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(22, 30),
+                    wakeTime = todayStart.at(6, 45),
+                    mood = Mood.GOOD,
+                )
 
             every { repository.findLatestSleepLogByUserId(42L) } returns buildSleepLog()
 
@@ -100,11 +101,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `saves sleep log with correct mood`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(23, 0),
-                wakeTime = todayStart.at(7, 0),
-                mood = Mood.BAD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(23, 0),
+                    wakeTime = todayStart.at(7, 0),
+                    mood = Mood.BAD,
+                )
             val slot = stubSuccessfulSave()
 
             service.createTodaySleepLog(42L, newSleepLog)
@@ -116,11 +118,12 @@ class SleepServiceImplTest {
         fun `throws ResourceNotFoundException when user does not exist`() {
             every { userRepository.findUserById(99L) } returns null
 
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(22, 30),
-                wakeTime = todayStart.at(6, 45),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(22, 30),
+                    wakeTime = todayStart.at(6, 45),
+                    mood = Mood.GOOD,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(99L, newSleepLog) }
                 .isInstanceOf(ResourceNotFoundException::class.java)
@@ -129,11 +132,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws SleepLogInvalidException when bed time is after wake time`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.at(8, 0),
-                wakeTime = todayStart.at(6, 0),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.at(8, 0),
+                    wakeTime = todayStart.at(6, 0),
+                    mood = Mood.GOOD,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -144,11 +148,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws SleepLogInvalidException when wake time is before start of user day`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(20, 0),
-                wakeTime = todayStart.minusDays(1).at(23, 0),
-                mood = Mood.OK
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(20, 0),
+                    wakeTime = todayStart.minusDays(1).at(23, 0),
+                    mood = Mood.OK,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -159,11 +164,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws SleepLogInvalidException when bed time equals wake time`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.at(6, 0),
-                wakeTime = todayStart.at(6, 0),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.at(6, 0),
+                    wakeTime = todayStart.at(6, 0),
+                    mood = Mood.GOOD,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -174,11 +180,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws SleepLogInvalidException when sleep duration is below minimum`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.at(6, 0),
-                wakeTime = todayStart.at(6, 20),
-                mood = Mood.OK
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.at(6, 0),
+                    wakeTime = todayStart.at(6, 20),
+                    mood = Mood.OK,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -189,11 +196,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `allows sleep log at exactly minimum duration`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.at(6, 0),
-                wakeTime = todayStart.at(6, 30),
-                mood = Mood.OK
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.at(6, 0),
+                    wakeTime = todayStart.at(6, 30),
+                    mood = Mood.OK,
+                )
             stubSuccessfulSave()
 
             val result = service.createTodaySleepLog(42L, newSleepLog)
@@ -203,11 +211,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws SleepLogInvalidException when sleep duration exceeds 24 hours`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(2).at(5, 0),
-                wakeTime = todayStart.at(6, 0),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(2).at(5, 0),
+                    wakeTime = todayStart.at(6, 0),
+                    mood = Mood.GOOD,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -218,11 +227,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws SleepLogInvalidException when sleep duration is exactly 24 hours`() {
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(6, 0),
-                wakeTime = todayStart.at(6, 0),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(6, 0),
+                    wakeTime = todayStart.at(6, 0),
+                    mood = Mood.GOOD,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -233,18 +243,20 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws SleepLogInvalidException when new log overlaps with existing entry`() {
-            val existingLog = buildSleepLog(
-                sleepDate = todayStart.minusDays(1),
-                bedTime = todayStart.minusDays(2).at(22, 0),
-                wakeTime = todayStart.minusDays(1).at(7, 0)
-            )
+            val existingLog =
+                buildSleepLog(
+                    sleepDate = todayStart.minusDays(1),
+                    bedTime = todayStart.minusDays(2).at(22, 0),
+                    wakeTime = todayStart.minusDays(1).at(7, 0),
+                )
             every { repository.findLatestSleepLogByUserId(42L) } returns existingLog
 
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(6, 0),
-                wakeTime = todayStart.at(5, 0),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(6, 0),
+                    wakeTime = todayStart.at(5, 0),
+                    mood = Mood.GOOD,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -256,18 +268,20 @@ class SleepServiceImplTest {
         @Test
         fun `throws ResourceConflictException when existing log wake time is exactly start of day`() {
             // wakeTime == startOfUserDay should count as "today" (>= boundary)
-            val existingLog = buildSleepLog(
-                sleepDate = todayStart,
-                bedTime = todayStart.minusDays(1).at(22, 0),
-                wakeTime = todayStart
-            )
+            val existingLog =
+                buildSleepLog(
+                    sleepDate = todayStart,
+                    bedTime = todayStart.minusDays(1).at(22, 0),
+                    wakeTime = todayStart,
+                )
             every { repository.findLatestSleepLogByUserId(42L) } returns existingLog
 
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.at(1, 0),
-                wakeTime = todayStart.at(7, 0),
-                mood = Mood.OK
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.at(1, 0),
+                    wakeTime = todayStart.at(7, 0),
+                    mood = Mood.OK,
+                )
 
             assertThatThrownBy { service.createTodaySleepLog(42L, newSleepLog) }
                 .isInstanceOf(ResourceConflictException::class.java)
@@ -278,18 +292,20 @@ class SleepServiceImplTest {
 
         @Test
         fun `allows creation when existing log is from a prior day`() {
-            val priorDayLog = buildSleepLog(
-                sleepDate = todayStart.minusDays(1),
-                bedTime = todayStart.minusDays(2).at(22, 0),
-                wakeTime = todayStart.minusDays(1).at(6, 0)
-            )
+            val priorDayLog =
+                buildSleepLog(
+                    sleepDate = todayStart.minusDays(1),
+                    bedTime = todayStart.minusDays(2).at(22, 0),
+                    wakeTime = todayStart.minusDays(1).at(6, 0),
+                )
             every { repository.findLatestSleepLogByUserId(42L) } returns priorDayLog
 
-            val newSleepLog = NewSleepLog(
-                bedTime = todayStart.minusDays(1).at(22, 30),
-                wakeTime = todayStart.at(6, 45),
-                mood = Mood.GOOD
-            )
+            val newSleepLog =
+                NewSleepLog(
+                    bedTime = todayStart.minusDays(1).at(22, 30),
+                    wakeTime = todayStart.at(6, 45),
+                    mood = Mood.GOOD,
+                )
             val slot = slot<SleepLog>()
             every { repository.saveSleepLog(capture(slot)) } answers { slot.captured.copy(id = 2L) }
 
@@ -310,8 +326,12 @@ class SleepServiceImplTest {
             every { repository.findLatestSleepLogByUserId(50L) } returns null
 
             // Bed at 23:00 NY (2024-01-15T04:00Z), wake at 06:00 NY (2024-01-15T11:00Z)
-            val nyTodayStart = LocalDate.of(2024, 1, 15)
-                .atStartOfDay(nyZone).toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC)
+            val nyTodayStart =
+                LocalDate
+                    .of(2024, 1, 15)
+                    .atStartOfDay(nyZone)
+                    .toOffsetDateTime()
+                    .withOffsetSameInstant(ZoneOffset.UTC)
             val bedTime = nyTodayStart.minusHours(1) // 04:00Z = 23:00 NY previous day
             val wakeTime = nyTodayStart.plusHours(6) // 11:00Z = 06:00 NY
 
@@ -330,7 +350,6 @@ class SleepServiceImplTest {
 
     @Nested
     inner class GetLastNightSleep {
-
         @Test
         fun `returns sleep log when found`() {
             val log = buildSleepLog()
@@ -364,11 +383,12 @@ class SleepServiceImplTest {
         @Test
         fun `returns sleep log when wake time is exactly start of day`() {
             // wakeTime == startOfUserDay should count as "today" (>= boundary)
-            val log = buildSleepLog(
-                sleepDate = todayStart,
-                bedTime = todayStart.minusDays(1).at(22, 0),
-                wakeTime = todayStart
-            )
+            val log =
+                buildSleepLog(
+                    sleepDate = todayStart,
+                    bedTime = todayStart.minusDays(1).at(22, 0),
+                    wakeTime = todayStart,
+                )
 
             every { repository.findLatestSleepLogByUserId(42L) } returns log
 
@@ -379,11 +399,12 @@ class SleepServiceImplTest {
 
         @Test
         fun `throws ResourceNotFoundException when log exists but is from a prior day`() {
-            val yesterdayLog = buildSleepLog(
-                sleepDate = todayStart.minusDays(1),
-                bedTime = todayStart.minusDays(2).at(22, 0),
-                wakeTime = todayStart.minusDays(1).at(6, 0)
-            )
+            val yesterdayLog =
+                buildSleepLog(
+                    sleepDate = todayStart.minusDays(1),
+                    bedTime = todayStart.minusDays(2).at(22, 0),
+                    wakeTime = todayStart.minusDays(1).at(6, 0),
+                )
             every { repository.findLatestSleepLogByUserId(42L) } returns yesterdayLog
 
             assertThatThrownBy { service.getTodaySleepLog(42L) }
@@ -394,7 +415,6 @@ class SleepServiceImplTest {
 
     @Nested
     inner class GetSleepAverages {
-
         @Test
         fun `returns null averages when no logs exist`() {
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns emptyList()
@@ -420,27 +440,28 @@ class SleepServiceImplTest {
                 repository.findSleepLogsByUserIdAndWakeTimeRange(
                     42L,
                     match { it.toLocalDate() == thirtyDaysAgo },
-                    match { it.toLocalDate() == tomorrow }
+                    match { it.toLocalDate() == tomorrow },
                 )
             }
         }
 
         @Test
         fun `computes correct average duration`() {
-            val logs = listOf(
-                buildSleepLog(
-                    id = 1,
-                    sleepDate = todayStart,
-                    bedTime = todayStart.minusDays(1).at(22, 0),
-                    wakeTime = todayStart.at(6, 0)
-                ), // 8h = 480m
-                buildSleepLog(
-                    id = 2,
-                    sleepDate = todayStart.minusDays(1),
-                    bedTime = todayStart.minusDays(2).at(23, 0),
-                    wakeTime = todayStart.minusDays(1).at(6, 0)
-                ) // 7h = 420m
-            )
+            val logs =
+                listOf(
+                    buildSleepLog(
+                        id = 1,
+                        sleepDate = todayStart,
+                        bedTime = todayStart.minusDays(1).at(22, 0),
+                        wakeTime = todayStart.at(6, 0),
+                    ), // 8h = 480m
+                    buildSleepLog(
+                        id = 2,
+                        sleepDate = todayStart.minusDays(1),
+                        bedTime = todayStart.minusDays(2).at(23, 0),
+                        wakeTime = todayStart.minusDays(1).at(6, 0),
+                    ), // 7h = 420m
+                )
 
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns logs
 
@@ -451,12 +472,13 @@ class SleepServiceImplTest {
 
         @Test
         fun `computes mood frequency counts`() {
-            val logs = listOf(
-                buildSleepLog(id = 1, sleepDate = todayStart, mood = Mood.GOOD),
-                buildSleepLog(id = 2, sleepDate = todayStart.minusDays(1), mood = Mood.GOOD),
-                buildSleepLog(id = 3, sleepDate = todayStart.minusDays(2), mood = Mood.BAD),
-                buildSleepLog(id = 4, sleepDate = todayStart.minusDays(3), mood = Mood.OK)
-            )
+            val logs =
+                listOf(
+                    buildSleepLog(id = 1, sleepDate = todayStart, mood = Mood.GOOD),
+                    buildSleepLog(id = 2, sleepDate = todayStart.minusDays(1), mood = Mood.GOOD),
+                    buildSleepLog(id = 3, sleepDate = todayStart.minusDays(2), mood = Mood.BAD),
+                    buildSleepLog(id = 4, sleepDate = todayStart.minusDays(3), mood = Mood.OK),
+                )
 
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns logs
 
@@ -469,9 +491,10 @@ class SleepServiceImplTest {
 
         @Test
         fun `omits moods with no occurrences from frequencies`() {
-            val logs = listOf(
-                buildSleepLog(id = 1, sleepDate = todayStart, mood = Mood.GOOD)
-            )
+            val logs =
+                listOf(
+                    buildSleepLog(id = 1, sleepDate = todayStart, mood = Mood.GOOD),
+                )
 
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns logs
 
@@ -484,20 +507,21 @@ class SleepServiceImplTest {
         @Test
         fun `computes circular average bed time across midnight`() {
             // 23:00 and 01:00 should average to 00:00, not 12:00
-            val logs = listOf(
-                buildSleepLog(
-                    id = 1,
-                    sleepDate = todayStart,
-                    bedTime = todayStart.minusDays(1).at(23, 0),
-                    wakeTime = todayStart.at(7, 0)
-                ),
-                buildSleepLog(
-                    id = 2,
-                    sleepDate = todayStart.minusDays(1),
-                    bedTime = todayStart.minusDays(1).at(1, 0),
-                    wakeTime = todayStart.minusDays(1).at(7, 0)
+            val logs =
+                listOf(
+                    buildSleepLog(
+                        id = 1,
+                        sleepDate = todayStart,
+                        bedTime = todayStart.minusDays(1).at(23, 0),
+                        wakeTime = todayStart.at(7, 0),
+                    ),
+                    buildSleepLog(
+                        id = 2,
+                        sleepDate = todayStart.minusDays(1),
+                        bedTime = todayStart.minusDays(1).at(1, 0),
+                        wakeTime = todayStart.minusDays(1).at(7, 0),
+                    ),
                 )
-            )
 
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns logs
 
@@ -508,18 +532,19 @@ class SleepServiceImplTest {
 
         @Test
         fun `computes average wake time for consistent wake times`() {
-            val logs = listOf(
-                buildSleepLog(
-                    id = 1,
-                    sleepDate = todayStart,
-                    wakeTime = todayStart.at(7, 0)
-                ),
-                buildSleepLog(
-                    id = 2,
-                    sleepDate = todayStart.minusDays(1),
-                    wakeTime = todayStart.minusDays(1).at(7, 0)
+            val logs =
+                listOf(
+                    buildSleepLog(
+                        id = 1,
+                        sleepDate = todayStart,
+                        wakeTime = todayStart.at(7, 0),
+                    ),
+                    buildSleepLog(
+                        id = 2,
+                        sleepDate = todayStart.minusDays(1),
+                        wakeTime = todayStart.minusDays(1).at(7, 0),
+                    ),
                 )
-            )
 
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns logs
 
@@ -549,14 +574,15 @@ class SleepServiceImplTest {
 
         @Test
         fun `computes correct averages with single log`() {
-            val logs = listOf(
-                buildSleepLog(
-                    id = 1,
-                    sleepDate = todayStart,
-                    bedTime = todayStart.minusDays(1).at(23, 0),
-                    wakeTime = todayStart.at(7, 0)
+            val logs =
+                listOf(
+                    buildSleepLog(
+                        id = 1,
+                        sleepDate = todayStart,
+                        bedTime = todayStart.minusDays(1).at(23, 0),
+                        wakeTime = todayStart.at(7, 0),
+                    ),
                 )
-            )
 
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns logs
 
@@ -579,34 +605,45 @@ class SleepServiceImplTest {
 
             service.getSleepStats(50L)
 
-            val expectedFrom = LocalDate.of(2024, 1, 15).minusDays(29)
-                .atStartOfDay(nyZone).toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC)
-            val expectedTo = LocalDate.of(2024, 1, 15).plusDays(1)
-                .atStartOfDay(nyZone).toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC)
+            val expectedFrom =
+                LocalDate
+                    .of(2024, 1, 15)
+                    .minusDays(29)
+                    .atStartOfDay(nyZone)
+                    .toOffsetDateTime()
+                    .withOffsetSameInstant(ZoneOffset.UTC)
+            val expectedTo =
+                LocalDate
+                    .of(2024, 1, 15)
+                    .plusDays(1)
+                    .atStartOfDay(nyZone)
+                    .toOffsetDateTime()
+                    .withOffsetSameInstant(ZoneOffset.UTC)
 
             verify {
                 repository.findSleepLogsByUserIdAndWakeTimeRange(
                     50L,
                     match { it.isEqual(expectedFrom) },
-                    match { it.isEqual(expectedTo) }
+                    match { it.isEqual(expectedTo) },
                 )
             }
         }
 
         @Test
         fun `computes average wake time across different times`() {
-            val logs = listOf(
-                buildSleepLog(
-                    id = 1,
-                    sleepDate = todayStart,
-                    wakeTime = todayStart.at(6, 0)
-                ),
-                buildSleepLog(
-                    id = 2,
-                    sleepDate = todayStart.minusDays(1),
-                    wakeTime = todayStart.minusDays(1).at(8, 0)
+            val logs =
+                listOf(
+                    buildSleepLog(
+                        id = 1,
+                        sleepDate = todayStart,
+                        wakeTime = todayStart.at(6, 0),
+                    ),
+                    buildSleepLog(
+                        id = 2,
+                        sleepDate = todayStart.minusDays(1),
+                        wakeTime = todayStart.minusDays(1).at(8, 0),
+                    ),
                 )
-            )
 
             every { repository.findSleepLogsByUserIdAndWakeTimeRange(42L, any(), any()) } returns logs
 
@@ -616,8 +653,10 @@ class SleepServiceImplTest {
         }
     }
 
-    private fun OffsetDateTime.at(hour: Int, minute: Int): OffsetDateTime =
-        withHour(hour).withMinute(minute).withSecond(0).withNano(0)
+    private fun OffsetDateTime.at(
+        hour: Int,
+        minute: Int,
+    ): OffsetDateTime = withHour(hour).withMinute(minute).withSecond(0).withNano(0)
 
     private fun buildSleepLog(
         id: Long = 1L,
@@ -625,7 +664,7 @@ class SleepServiceImplTest {
         sleepDate: OffsetDateTime = todayStart,
         bedTime: OffsetDateTime = sleepDate.minusDays(1).at(22, 30),
         wakeTime: OffsetDateTime = sleepDate.at(6, 45),
-        mood: Mood = Mood.GOOD
+        mood: Mood = Mood.GOOD,
     ) = SleepLog(
         id = id,
         userId = userId,
@@ -633,7 +672,7 @@ class SleepServiceImplTest {
         bedTimeZone = ZoneId.of("UTC"),
         wakeTime = wakeTime,
         wakeTimeZone = ZoneId.of("UTC"),
-        mood = mood
+        mood = mood,
     )
 
     private fun stubSuccessfulSave(): CapturingSlot<SleepLog> {

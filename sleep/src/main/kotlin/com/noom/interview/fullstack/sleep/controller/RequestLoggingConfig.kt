@@ -6,16 +6,14 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter
 
 @Configuration
 class RequestLoggingConfig {
-
     @Bean
     @Suppress("UsePropertyAccessSyntax")
-    fun logFilter(): CommonsRequestLoggingFilter {
-        return CommonsRequestLoggingFilter().apply {
+    fun logFilter(): CommonsRequestLoggingFilter =
+        CommonsRequestLoggingFilter().apply {
             setIncludeQueryString(true)
             setIncludePayload(true)
             setMaxPayloadLength(10000)
             setIncludeHeaders(true)
             setAfterMessagePrefix("REQUEST DATA : ")
         }
-    }
 }

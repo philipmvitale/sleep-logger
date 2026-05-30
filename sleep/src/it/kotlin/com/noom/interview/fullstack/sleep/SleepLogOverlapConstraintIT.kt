@@ -1,7 +1,7 @@
 package com.noom.interview.fullstack.sleep
 
 import com.ninjasquad.springmockk.MockkBean
-import com.ninjasquad.springmockk.SpykBean
+import com.ninjasquad.springmockk.MockkSpyBean
 import com.noom.interview.fullstack.sleep.model.Mood
 import com.noom.interview.fullstack.sleep.model.SleepLog
 import com.noom.interview.fullstack.sleep.model.User
@@ -30,7 +30,6 @@ import java.time.format.DateTimeFormatter
  * seen the first row yet) but the DB constraint catches the conflict.
  */
 class SleepLogOverlapConstraintIT : AbstractIntegrationTest() {
-
     companion object {
         val FIXED_INSTANT: Instant = Instant.parse("2024-06-15T12:00:00Z")
         val TODAY: LocalDate = LocalDate.ofInstant(FIXED_INSTANT, ZoneOffset.UTC)
@@ -39,7 +38,7 @@ class SleepLogOverlapConstraintIT : AbstractIntegrationTest() {
     @MockkBean
     private lateinit var clock: Clock
 
-    @SpykBean
+    @MockkSpyBean
     private lateinit var sleepLogRepository: SleepLogRepository
 
     @Autowired
@@ -77,8 +76,8 @@ class SleepLogOverlapConstraintIT : AbstractIntegrationTest() {
                 bedTime = bedTime,
                 bedTimeZone = nyZone,
                 wakeTime = wakeTime,
-                wakeTimeZone = nyZone
-            )
+                wakeTimeZone = nyZone,
+            ),
         )
 
         // Make the service-layer overlap check see no existing log, simulating the
@@ -87,18 +86,25 @@ class SleepLogOverlapConstraintIT : AbstractIntegrationTest() {
 
         // POST an overlapping sleep log — the service check passes, but the DB
         // exclusion constraint rejects the insert.
-        val overlappingBed = TODAY.minusDays(1).atTime(23, 0).atOffset(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        val overlappingWake = TODAY.atTime(7, 0).atOffset(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val overlappingBed =
+            TODAY
+                .minusDays(1)
+                .atTime(23, 0)
+                .atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val overlappingWake =
+            TODAY
+                .atTime(7, 0)
+                .atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
-        mockMvc.perform(
-            post("/api/v1/sleep-log")
-                .header("X-User-Id", userId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"bedTime":"$overlappingBed","wakeTime":"$overlappingWake","mood":"OK"}""")
-        )
-            .andExpect(status().isConflict)
+        mockMvc
+            .perform(
+                post("/api/v1/sleep-log")
+                    .header("X-User-Id", userId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"bedTime":"$overlappingBed","wakeTime":"$overlappingWake","mood":"OK"}"""),
+            ).andExpect(status().isConflict)
             .andExpect(jsonPath("$.error").value("Conflict"))
             .andExpect(jsonPath("$.message").value("This sleep log overlaps with an existing entry."))
     }

@@ -42,7 +42,5 @@ class DatabaseConfiguration {
     fun dbConnection(dataSource: DataSource): Connection = dataSource.connection
 
     @Bean
-    fun namedParameterJdbcTemplate(dataSource: DataSource): NamedParameterJdbcTemplate {
-        return NamedParameterJdbcTemplate(dataSource)
-    }
+    fun namedParameterJdbcTemplate(dataSource: DataSource): NamedParameterJdbcTemplate = NamedParameterJdbcTemplate(dataSource)
 }

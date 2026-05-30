@@ -23,12 +23,11 @@ import com.noom.interview.fullstack.sleep.api.model.Mood as ApiMood
  */
 @RestController
 class SleepController(
-    private val sleepService: SleepService
+    private val sleepService: SleepService,
 ) : SleepApi {
-
     override fun createSleepLog(
         xUserId: Long,
-        createSleepLogRequest: CreateSleepLogRequest
+        createSleepLogRequest: CreateSleepLogRequest,
     ): ResponseEntity<SleepLogResponse> {
         val newSleepLog = toNewSleepLog(createSleepLogRequest)
         val sleepLog = sleepService.createTodaySleepLog(xUserId, newSleepLog)
@@ -46,33 +45,37 @@ class SleepController(
     }
 
     /** Converts the generated API request DTO to the domain input model. */
-    private fun toNewSleepLog(request: CreateSleepLogRequest) = NewSleepLog(
-        bedTime = request.bedTime,
-        wakeTime = request.wakeTime,
-        mood = Mood.valueOf(request.mood.value)
-    )
+    private fun toNewSleepLog(request: CreateSleepLogRequest) =
+        NewSleepLog(
+            bedTime = request.bedTime,
+            wakeTime = request.wakeTime,
+            mood = Mood.valueOf(request.mood.value),
+        )
 
     /** Converts a domain [SleepLog] to the generated API response DTO. */
-    private fun toSleepLogResponse(sleepLog: SleepLog) = SleepLogResponse(
-        bedTime = sleepLog.bedTime,
-        bedTimeZone = sleepLog.bedTimeZone.id,
-        wakeTime = sleepLog.wakeTime,
-        wakeTimeZone = sleepLog.wakeTimeZone.id,
-        durationMinutes = sleepLog.duration.toMinutes(),
-        mood = ApiMood.valueOf(sleepLog.mood.name)
-    )
+    private fun toSleepLogResponse(sleepLog: SleepLog) =
+        SleepLogResponse(
+            bedTime = sleepLog.bedTime,
+            bedTimeZone = sleepLog.bedTimeZone.id,
+            wakeTime = sleepLog.wakeTime,
+            wakeTimeZone = sleepLog.wakeTimeZone.id,
+            durationMinutes = sleepLog.duration.toMinutes(),
+            mood = ApiMood.valueOf(sleepLog.mood.name),
+        )
 
     /** Converts a domain [SleepStats] to the generated API response DTO, flattening the mood map. */
-    private fun toSleepStatsResponse(stats: SleepStats) = SleepStatsResponse(
-        dateFrom = stats.dateFrom,
-        dateTo = stats.dateTo,
-        averageDurationMinutes = stats.averageDurationMinutes,
-        averageBedTime = stats.averageBedTime,
-        averageWakeTime = stats.averageWakeTime,
-        moodFrequencies = MoodFrequencies(
-            badFrequency = stats.moodFrequencies[Mood.BAD] ?: 0,
-            okFrequency = stats.moodFrequencies[Mood.OK] ?: 0,
-            goodFrequency = stats.moodFrequencies[Mood.GOOD] ?: 0
+    private fun toSleepStatsResponse(stats: SleepStats) =
+        SleepStatsResponse(
+            dateFrom = stats.dateFrom,
+            dateTo = stats.dateTo,
+            averageDurationMinutes = stats.averageDurationMinutes,
+            averageBedTime = stats.averageBedTime,
+            averageWakeTime = stats.averageWakeTime,
+            moodFrequencies =
+                MoodFrequencies(
+                    badFrequency = stats.moodFrequencies[Mood.BAD] ?: 0,
+                    okFrequency = stats.moodFrequencies[Mood.OK] ?: 0,
+                    goodFrequency = stats.moodFrequencies[Mood.GOOD] ?: 0,
+                ),
         )
-    )
 }
