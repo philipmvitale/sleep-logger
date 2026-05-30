@@ -84,7 +84,7 @@ class JdbcUserRepositoryTest {
         @Test
         fun `throws when insert returns null`() {
             every {
-                jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<Any>>())
+                jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<Any?>>())
             } returns null
 
             assertThatThrownBy {

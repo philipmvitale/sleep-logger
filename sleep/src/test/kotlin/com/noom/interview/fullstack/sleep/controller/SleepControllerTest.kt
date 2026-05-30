@@ -1,6 +1,5 @@
 package com.noom.interview.fullstack.sleep.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.noom.interview.fullstack.sleep.api.model.CreateSleepLogRequest
 import com.noom.interview.fullstack.sleep.exception.ResourceConflictException
 import com.noom.interview.fullstack.sleep.exception.ResourceNotFoundException
@@ -17,8 +16,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
@@ -28,6 +27,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.ObjectMapper
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneId

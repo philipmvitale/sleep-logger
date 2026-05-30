@@ -20,13 +20,13 @@ import javax.sql.DataSource
 @Profile("!$UNIT_TEST_PROFILE")
 class DatabaseConfiguration {
     @Value("\${spring.datasource.url}")
-    private val url: String? = null
+    private lateinit var url: String
 
     @Value("\${spring.datasource.username}")
-    private val username: String? = null
+    private lateinit var username: String
 
     @Value("\${spring.datasource.password}")
-    private val password: String? = null
+    private lateinit var password: String
 
     @Bean
     fun dataSource(): DataSource {
