@@ -20,12 +20,12 @@ breakdowns.
 
 ## Tech Stack
 
-- **Language:** Kotlin 1.6 / Java 17
-- **Framework:** Spring Boot 2.7
-- **Database:** PostgreSQL 13 with Flyway migrations
+- **Language:** Kotlin 2.3 / Java 25
+- **Framework:** Spring Boot 3.5
+- **Database:** PostgreSQL 17 with Flyway migrations
 - **Data access:** `NamedParameterJdbcTemplate` (no ORM)
 - **API contract:** OpenAPI 3.0 with code generation
-- **Build:** Gradle (Groovy DSL)
+- **Build:** Gradle 9 (Kotlin DSL) with version catalog
 - **Testing:** JUnit 5, MockK, Testcontainers, Kover (90% minimum coverage)
 - **CI:** GitHub Actions + SonarQube
 
@@ -34,7 +34,7 @@ breakdowns.
 ### Prerequisites
 
 - Docker and Docker Compose
-- JDK 17 (for local development)
+- JDK 25 (for local development)
 - cURL (for running CLI scripts)
 - jq (for running CLI scripts)
 - npm (for architecture diagram validation only)
@@ -186,6 +186,8 @@ sleep/
         db/migration/      # Flyway SQL migrations
     test/                  # Unit tests (MockK, no database)
     it/                    # Integration tests (Testcontainers + PostgreSQL)
+  build.gradle.kts         # Build config (Gradle Kotlin DSL)
+  gradle/libs.versions.toml # Version catalog (dependency & plugin versions)
 ```
 
 The API contract lives in `sleep-api.yaml`. The OpenAPI Generator plugin produces request/response DTOs and controller

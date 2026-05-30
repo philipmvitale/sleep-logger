@@ -47,8 +47,8 @@ Run the full stack with Docker: `docker compose up --build` (Postgres on 5432, A
 
 ## Architecture
 
-Kotlin 1.6 + Spring Boot 2.7 REST API backed by PostgreSQL 13. Java 17. No ORM — uses `NamedParameterJdbcTemplate`
-(Spring JDBC) directly.
+Kotlin 2.3 + Spring Boot 3.5 REST API backed by PostgreSQL 17. Java 25. Built with Gradle 9 (Kotlin DSL) and a version
+catalog (`gradle/libs.versions.toml`). No ORM — uses `NamedParameterJdbcTemplate` (Spring JDBC) directly.
 
 ### API-First with OpenAPI Generator
 
@@ -74,7 +74,8 @@ generated interfaces — never edit API interface or DTOs by hand; change the YA
 ### Database
 
 PostgreSQL with Flyway migrations in `sleep/src/main/resources/db/migration/`.
-Spring Configuration in `sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/db/DatabaseConfiguration.kt`.
+Spring Configuration in
+`sleep/src/main/kotlin/com/noom/interview/fullstack/sleep/configuration/DatabaseConfiguration.kt`.
 
 ### Testing
 

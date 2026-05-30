@@ -57,7 +57,7 @@ flowchart TD
 
 ## Database ER Diagram
 
-PostgreSQL 13 with Flyway-managed migrations. The `timezones` table is a reference table seeded from
+PostgreSQL 17 with Flyway-managed migrations. The `timezones` table is a reference table seeded from
 `pg_timezone_names`. The `sleep_logs` table uses a GiST exclusion constraint to prevent overlapping sleep ranges per
 user at the database level.
 
