@@ -24,7 +24,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 class JdbcSleepLogRepositoryTest {
-
     private val jdbcTemplate: NamedParameterJdbcTemplate = mockk()
     private lateinit var repository: JdbcSleepLogRepository
 
@@ -41,21 +40,22 @@ class JdbcSleepLogRepositoryTest {
     private fun stubResultSet(
         mood: String = "GOOD",
         bedTz: String = "UTC",
-        wakeTz: String = "UTC"
-    ): ResultSet = mockk {
-        every { getLong("id") } returns 1L
-        every { getLong("user_id") } returns 42L
-        every { getString("mood") } returns mood
-        every { getObject("bed_time", OffsetDateTime::class.java) } returns bedTime
-        every { getString("bed_timezone") } returns bedTz
-        every { getObject("wake_time", OffsetDateTime::class.java) } returns wakeTime
-        every { getString("wake_timezone") } returns wakeTz
-    }
+        wakeTz: String = "UTC",
+    ): ResultSet =
+        mockk {
+            every { getLong("id") } returns 1L
+            every { getLong("user_id") } returns 42L
+            every { getString("mood") } returns mood
+            every { getObject("bed_time", OffsetDateTime::class.java) } returns bedTime
+            every { getString("bed_timezone") } returns bedTz
+            every { getObject("wake_time", OffsetDateTime::class.java) } returns wakeTime
+            every { getString("wake_timezone") } returns wakeTz
+        }
 
     private fun buildSleepLog(
         mood: Mood = Mood.GOOD,
         bedTz: ZoneId = ZoneId.of("UTC"),
-        wakeTz: ZoneId = ZoneId.of("UTC")
+        wakeTz: ZoneId = ZoneId.of("UTC"),
     ) = SleepLog(
         id = 0,
         userId = 42L,
@@ -63,7 +63,7 @@ class JdbcSleepLogRepositoryTest {
         bedTime = bedTime,
         bedTimeZone = bedTz,
         wakeTime = wakeTime,
-        wakeTimeZone = wakeTz
+        wakeTimeZone = wakeTz,
     )
 
     private fun mockQueryWithRowMapper(rs: ResultSet) {
@@ -86,7 +86,6 @@ class JdbcSleepLogRepositoryTest {
 
     @Nested
     inner class Insert {
-
         @Test
         fun `passes correct parameters to SQL`() {
             val sleepLog = buildSleepLog()
@@ -137,10 +136,11 @@ class JdbcSleepLogRepositoryTest {
         fun `translates overlapping sleep constraint to ResourceConflictException`() {
             every {
                 jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog>>())
-            } throws DataIntegrityViolationException(
-                "insert failed",
-                Exception("""violates exclude constraint "no_overlapping_sleep"""")
-            )
+            } throws
+                DataIntegrityViolationException(
+                    "insert failed",
+                    Exception("""violates exclude constraint "no_overlapping_sleep""""),
+                )
 
             assertThatThrownBy { repository.saveSleepLog(buildSleepLog()) }
                 .isInstanceOf(ResourceConflictException::class.java)
@@ -151,10 +151,11 @@ class JdbcSleepLogRepositoryTest {
         fun `translates wake_after_bed constraint to SleepLogInvalidException`() {
             every {
                 jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog>>())
-            } throws DataIntegrityViolationException(
-                "insert failed",
-                Exception("""violates check constraint "wake_after_bed"""")
-            )
+            } throws
+                DataIntegrityViolationException(
+                    "insert failed",
+                    Exception("""violates check constraint "wake_after_bed""""),
+                )
 
             assertThatThrownBy { repository.saveSleepLog(buildSleepLog()) }
                 .isInstanceOf(SleepLogInvalidException::class.java)
@@ -163,10 +164,11 @@ class JdbcSleepLogRepositoryTest {
 
         @Test
         fun `rethrows unknown DataIntegrityViolationException as-is`() {
-            val cause = DataIntegrityViolationException(
-                "insert failed",
-                Exception("""violates constraint "some_other_constraint"""")
-            )
+            val cause =
+                DataIntegrityViolationException(
+                    "insert failed",
+                    Exception("""violates constraint "some_other_constraint""""),
+                )
 
             every {
                 jdbcTemplate.queryForObject(any<String>(), any<MapSqlParameterSource>(), any<RowMapper<SleepLog>>())
@@ -180,7 +182,6 @@ class JdbcSleepLogRepositoryTest {
 
     @Nested
     inner class FindByUserIdAndWakeTimeRange {
-
         @Test
         fun `maps all fields correctly from result set`() {
             val rs = stubResultSet()
@@ -229,7 +230,6 @@ class JdbcSleepLogRepositoryTest {
 
     @Nested
     inner class FindLatest {
-
         @Test
         fun `returns sleep log when one exists`() {
             val rs = stubResultSet()
@@ -271,7 +271,6 @@ class JdbcSleepLogRepositoryTest {
 
     @Nested
     inner class NonUtcTimezones {
-
         @Test
         fun `row mapper handles non-UTC timezone identifiers`() {
             val rs = stubResultSet(bedTz = "America/New_York", wakeTz = "Europe/London")
@@ -289,13 +288,14 @@ class JdbcSleepLogRepositoryTest {
 
             every {
                 jdbcTemplate.queryForObject(any<String>(), capture(paramsSlot), any<RowMapper<SleepLog>>())
-            } returns buildSleepLog(
-                bedTz = ZoneId.of("America/New_York"),
-                wakeTz = ZoneId.of("Europe/London")
-            ).copy(id = 1)
+            } returns
+                buildSleepLog(
+                    bedTz = ZoneId.of("America/New_York"),
+                    wakeTz = ZoneId.of("Europe/London"),
+                ).copy(id = 1)
 
             repository.saveSleepLog(
-                buildSleepLog(bedTz = ZoneId.of("America/New_York"), wakeTz = ZoneId.of("Europe/London"))
+                buildSleepLog(bedTz = ZoneId.of("America/New_York"), wakeTz = ZoneId.of("Europe/London")),
             )
 
             val params = paramsSlot.captured
@@ -306,7 +306,6 @@ class JdbcSleepLogRepositoryTest {
 
     @Nested
     inner class MoodMapping {
-
         @ParameterizedTest
         @EnumSource(Mood::class)
         fun `row mapper handles mood`(mood: Mood) {

@@ -8,7 +8,6 @@ import com.noom.interview.fullstack.sleep.model.SleepStats
  * Service for managing user sleep logs and computing sleep statistics.
  */
 interface SleepService {
-
     /**
      * Creates a sleep log for today for the given user.
      *
@@ -19,7 +18,10 @@ interface SleepService {
      * @throws com.noom.interview.fullstack.sleep.exception.ResourceConflictException if a sleep log already exists for today
      * @throws com.noom.interview.fullstack.sleep.exception.SleepLogInvalidException if the sleep log fails validation
      */
-    fun createTodaySleepLog(userId: Long, newSleepLog: NewSleepLog): SleepLog
+    fun createTodaySleepLog(
+        userId: Long,
+        newSleepLog: NewSleepLog,
+    ): SleepLog
 
     /**
      * Retrieves the most recent sleep log for the given user, provided it falls on today's date.

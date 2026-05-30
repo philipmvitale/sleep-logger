@@ -37,9 +37,8 @@ private val logger = KotlinLogging.logger {}
 class SleepServiceImpl(
     private val sleepLogRepository: SleepLogRepository,
     private val userRepository: UserRepository,
-    private val clock: Clock
+    private val clock: Clock,
 ) : SleepService {
-
     companion object {
         val MINIMUM_SLEEP_DURATION: Duration = Duration.ofMinutes(30)
         val MAXIMUM_SLEEP_DURATION: Duration = Duration.ofHours(24)
@@ -47,7 +46,10 @@ class SleepServiceImpl(
     }
 
     @Transactional
-    override fun createTodaySleepLog(userId: Long, newSleepLog: NewSleepLog): SleepLog {
+    override fun createTodaySleepLog(
+        userId: Long,
+        newSleepLog: NewSleepLog,
+    ): SleepLog {
         val user = findUserOrThrow(userId)
         val sleepDuration = newSleepLog.duration
         validateSleepLog(!sleepDuration.isNegative && !sleepDuration.isZero) {
@@ -86,14 +88,15 @@ class SleepServiceImpl(
             }
         }
 
-        val sleepLog = SleepLog(
-            userId = userId,
-            bedTime = newSleepLog.bedTime,
-            bedTimeZone = user.timeZone,
-            wakeTime = newSleepLog.wakeTime,
-            wakeTimeZone = user.timeZone,
-            mood = newSleepLog.mood
-        )
+        val sleepLog =
+            SleepLog(
+                userId = userId,
+                bedTime = newSleepLog.bedTime,
+                bedTimeZone = user.timeZone,
+                wakeTime = newSleepLog.wakeTime,
+                wakeTimeZone = user.timeZone,
+                mood = newSleepLog.mood,
+            )
 
         val saved = sleepLogRepository.saveSleepLog(sleepLog)
         logger.info { "Created sleep log id=${saved.id} for userId=$userId, duration=${saved.duration.toMinutes()}min, mood=${saved.mood}" }
@@ -129,19 +132,21 @@ class SleepServiceImpl(
                 averageDurationMinutes = null,
                 averageBedTime = null,
                 averageWakeTime = null,
-                moodFrequencies = emptyMap()
+                moodFrequencies = emptyMap(),
             )
         }
 
         val avgDurationMinutes =
             logs.map { it.duration.toMinutes() }.average().roundToLong()
 
-        val avgBedTime = circularAverageTime(
-            logs.map { it.bedTime.atZoneSameInstant(it.bedTimeZone).toLocalTime() }
-        )
-        val avgWakeTime = circularAverageTime(
-            logs.map { it.wakeTime.atZoneSameInstant(it.wakeTimeZone).toLocalTime() }
-        )
+        val avgBedTime =
+            circularAverageTime(
+                logs.map { it.bedTime.atZoneSameInstant(it.bedTimeZone).toLocalTime() },
+            )
+        val avgWakeTime =
+            circularAverageTime(
+                logs.map { it.wakeTime.atZoneSameInstant(it.wakeTimeZone).toLocalTime() },
+            )
 
         val moodFrequencies = logs.groupingBy { it.mood }.eachCount()
 
@@ -151,14 +156,17 @@ class SleepServiceImpl(
             averageDurationMinutes = avgDurationMinutes,
             averageBedTime = avgBedTime,
             averageWakeTime = avgWakeTime,
-            moodFrequencies = moodFrequencies
+            moodFrequencies = moodFrequencies,
         )
     }
 
     private fun findUserOrThrow(userId: Long): User =
         userRepository.findUserById(userId) ?: throw ResourceNotFoundException("User not found")
 
-    private inline fun validateSleepLog(condition: Boolean, lazyMessage: () -> Pair<String, String>) {
+    private inline fun validateSleepLog(
+        condition: Boolean,
+        lazyMessage: () -> Pair<String, String>,
+    ) {
         if (!condition) {
             val (logMessage, errorMessage) = lazyMessage()
             logger.warn { logMessage }
@@ -173,7 +181,8 @@ class SleepServiceImpl(
      * then [withOffsetSameInstant] normalises to UTC so all comparisons use a single offset.
      */
     private fun startOfDayUtc(timeZone: ZoneId): OffsetDateTime =
-        LocalDate.now(clock.withZone(timeZone))
+        LocalDate
+            .now(clock.withZone(timeZone))
             .atStartOfDay(timeZone)
             .toOffsetDateTime()
             .withOffsetSameInstant(ZoneOffset.UTC)

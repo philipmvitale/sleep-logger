@@ -6,7 +6,6 @@ import com.noom.interview.fullstack.sleep.model.User
  * Repository for querying [User] records.
  */
 interface UserRepository {
-
     /**
      * Persists a new user.
      *

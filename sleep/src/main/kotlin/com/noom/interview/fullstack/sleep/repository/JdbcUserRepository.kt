@@ -15,26 +15,28 @@ private val logger = KotlinLogging.logger {}
  */
 @Repository
 class JdbcUserRepository(
-    private val jdbcTemplate: NamedParameterJdbcTemplate
+    private val jdbcTemplate: NamedParameterJdbcTemplate,
 ) : UserRepository {
-
     /** Maps a `users` row to a [User] domain object. */
-    private val rowMapper = RowMapper { rs, _ ->
-        User(
-            id = rs.getLong("id"),
-            timeZone = ZoneId.of(rs.getString("timezone"))
-        )
-    }
+    private val rowMapper =
+        RowMapper { rs, _ ->
+            User(
+                id = rs.getLong("id"),
+                timeZone = ZoneId.of(rs.getString("timezone")),
+            )
+        }
 
     override fun saveUser(user: User): User {
-        val sql = """
+        val sql =
+            """
             INSERT INTO users (timezone)
             VALUES (:timezone)
             RETURNING id, timezone
-        """.trimIndent()
+            """.trimIndent()
         val params = MapSqlParameterSource("timezone", user.timeZone.id)
-        val saved = jdbcTemplate.queryForObject(sql, params, rowMapper)
-            ?: throw IllegalStateException("INSERT RETURNING produced no row for user timezone=${user.timeZone}")
+        val saved =
+            jdbcTemplate.queryForObject(sql, params, rowMapper)
+                ?: throw IllegalStateException("INSERT RETURNING produced no row for user timezone=${user.timeZone}")
         logger.debug { "Inserted user id=${saved.id}" }
         return saved
     }

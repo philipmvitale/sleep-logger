@@ -18,5 +18,5 @@ data class SleepStats(
     val averageDurationMinutes: Long?,
     val averageBedTime: LocalTime?,
     val averageWakeTime: LocalTime?,
-    val moodFrequencies: Map<Mood, Int>
+    val moodFrequencies: Map<Mood, Int>,
 )

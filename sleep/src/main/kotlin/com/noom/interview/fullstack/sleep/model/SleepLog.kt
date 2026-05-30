@@ -20,7 +20,7 @@ data class SleepLog(
     val bedTime: OffsetDateTime,
     val bedTimeZone: ZoneId,
     val wakeTime: OffsetDateTime,
-    val wakeTimeZone: ZoneId
+    val wakeTimeZone: ZoneId,
 ) {
     val duration: Duration
         get() = Duration.between(bedTime, wakeTime)

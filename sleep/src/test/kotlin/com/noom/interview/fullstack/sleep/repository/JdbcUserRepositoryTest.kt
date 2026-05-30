@@ -16,7 +16,6 @@ import java.sql.ResultSet
 import java.time.ZoneId
 
 class JdbcUserRepositoryTest {
-
     private val jdbcTemplate: NamedParameterJdbcTemplate = mockk()
     private lateinit var repository: JdbcUserRepository
 
@@ -25,10 +24,11 @@ class JdbcUserRepositoryTest {
         repository = JdbcUserRepository(jdbcTemplate)
     }
 
-    private fun stubResultSet(timezone: String = "America/New_York"): ResultSet = mockk {
-        every { getLong("id") } returns 1L
-        every { getString("timezone") } returns timezone
-    }
+    private fun stubResultSet(timezone: String = "America/New_York"): ResultSet =
+        mockk {
+            every { getLong("id") } returns 1L
+            every { getString("timezone") } returns timezone
+        }
 
     private fun <T> mockQueryWithRowMapper(rs: ResultSet) {
         every {
@@ -52,7 +52,6 @@ class JdbcUserRepositoryTest {
 
     @Nested
     inner class SaveUser {
-
         @Test
         fun `returns saved user with generated id`() {
             val rs = stubResultSet()
@@ -97,7 +96,6 @@ class JdbcUserRepositoryTest {
 
     @Nested
     inner class FindUserById {
-
         @Test
         fun `maps all fields correctly from result set`() {
             val rs = stubResultSet()

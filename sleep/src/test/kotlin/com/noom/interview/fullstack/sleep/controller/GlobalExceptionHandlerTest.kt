@@ -3,6 +3,7 @@ package com.noom.interview.fullstack.sleep.controller
 import com.noom.interview.fullstack.sleep.exception.ResourceConflictException
 import com.noom.interview.fullstack.sleep.exception.ResourceNotFoundException
 import com.noom.interview.fullstack.sleep.exception.SleepLogInvalidException
+import jakarta.validation.ConstraintViolationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
@@ -11,10 +12,8 @@ import org.springframework.mock.http.MockHttpInputMessage
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingRequestHeaderException
-import javax.validation.ConstraintViolationException
 
 class GlobalExceptionHandlerTest {
-
     private val handler = GlobalExceptionHandler()
 
     @Test
@@ -63,10 +62,11 @@ class GlobalExceptionHandlerTest {
 
     @Test
     fun `maps HttpMessageNotReadableException to 400 Bad Request`() {
-        val ex = HttpMessageNotReadableException(
-            "JSON parse error",
-            MockHttpInputMessage(ByteArray(0))
-        )
+        val ex =
+            HttpMessageNotReadableException(
+                "JSON parse error",
+                MockHttpInputMessage(ByteArray(0)),
+            )
 
         val response = handler.handleBadRequest(ex)
 
@@ -77,14 +77,16 @@ class GlobalExceptionHandlerTest {
 
     @Test
     fun `maps MissingRequestHeaderException to 400 Bad Request`() {
-        val method = GlobalExceptionHandler::class.java.getMethod(
-            "handleMissingHeader",
-            MissingRequestHeaderException::class.java
-        )
-        val ex = MissingRequestHeaderException(
-            "X-User-Id",
-            org.springframework.core.MethodParameter(method, -1)
-        )
+        val method =
+            GlobalExceptionHandler::class.java.getMethod(
+                "handleMissingHeader",
+                MissingRequestHeaderException::class.java,
+            )
+        val ex =
+            MissingRequestHeaderException(
+                "X-User-Id",
+                org.springframework.core.MethodParameter(method, -1),
+            )
 
         val response = handler.handleMissingHeader(ex)
 
@@ -96,14 +98,16 @@ class GlobalExceptionHandlerTest {
     @Test
     fun `maps MethodArgumentNotValidException to 400 Bad Request`() {
         val bindingResult = BeanPropertyBindingResult(null, "request")
-        val method = GlobalExceptionHandler::class.java.getMethod(
-            "handleMethodArgumentNotValid",
-            MethodArgumentNotValidException::class.java
-        )
-        val ex = MethodArgumentNotValidException(
-            org.springframework.core.MethodParameter(method, -1),
-            bindingResult
-        )
+        val method =
+            GlobalExceptionHandler::class.java.getMethod(
+                "handleMethodArgumentNotValid",
+                MethodArgumentNotValidException::class.java,
+            )
+        val ex =
+            MethodArgumentNotValidException(
+                org.springframework.core.MethodParameter(method, -1),
+                bindingResult,
+            )
 
         val response = handler.handleMethodArgumentNotValid(ex)
 

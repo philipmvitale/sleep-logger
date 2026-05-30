@@ -25,45 +25,48 @@ private val logger = KotlinLogging.logger {}
  */
 @Repository
 class JdbcSleepLogRepository(
-    private val jdbcTemplate: NamedParameterJdbcTemplate
+    private val jdbcTemplate: NamedParameterJdbcTemplate,
 ) : SleepLogRepository {
-
     /** Maps a `sleep_logs` row to a [SleepLog] domain object. */
-    private val rowMapper = RowMapper { rs, _ ->
-        SleepLog(
-            id = rs.getLong("id"),
-            userId = rs.getLong("user_id"),
-            mood = Mood.valueOf(rs.getString("mood")),
-            bedTime = rs.getObject("bed_time", OffsetDateTime::class.java),
-            bedTimeZone = ZoneId.of(rs.getString("bed_timezone")),
-            wakeTime = rs.getObject("wake_time", OffsetDateTime::class.java),
-            wakeTimeZone = ZoneId.of(rs.getString("wake_timezone"))
-        )
-    }
+    private val rowMapper =
+        RowMapper { rs, _ ->
+            SleepLog(
+                id = rs.getLong("id"),
+                userId = rs.getLong("user_id"),
+                mood = Mood.valueOf(rs.getString("mood")),
+                bedTime = rs.getObject("bed_time", OffsetDateTime::class.java),
+                bedTimeZone = ZoneId.of(rs.getString("bed_timezone")),
+                wakeTime = rs.getObject("wake_time", OffsetDateTime::class.java),
+                wakeTimeZone = ZoneId.of(rs.getString("wake_timezone")),
+            )
+        }
 
     override fun saveSleepLog(sleepLog: SleepLog): SleepLog {
-        val sql = """
+        val sql =
+            """
             INSERT INTO sleep_logs (user_id, mood, bed_time, bed_timezone, wake_time, wake_timezone)
             VALUES (:userId, :mood::mood_type, :bedTime, :bedTimeZone, :wakeTime, :wakeTimeZone)
             RETURNING id, user_id, mood, bed_time, bed_timezone, wake_time, wake_timezone
-        """.trimIndent()
+            """.trimIndent()
 
-        val params = MapSqlParameterSource(
-            mapOf(
-                "userId" to sleepLog.userId,
-                "mood" to sleepLog.mood.name,
-                "bedTime" to sleepLog.bedTime,
-                "bedTimeZone" to sleepLog.bedTimeZone.id,
-                "wakeTime" to sleepLog.wakeTime,
-                "wakeTimeZone" to sleepLog.wakeTimeZone.id
+        val params =
+            MapSqlParameterSource(
+                mapOf(
+                    "userId" to sleepLog.userId,
+                    "mood" to sleepLog.mood.name,
+                    "bedTime" to sleepLog.bedTime,
+                    "bedTimeZone" to sleepLog.bedTimeZone.id,
+                    "wakeTime" to sleepLog.wakeTime,
+                    "wakeTimeZone" to sleepLog.wakeTimeZone.id,
+                ),
             )
-        )
 
-        val saved = try {
-            jdbcTemplate.queryForObject(sql, params, rowMapper)
-        } catch (ex: DataIntegrityViolationException) {
-            throw translateConstraintViolation(ex, sleepLog.userId)
-        } ?: throw IllegalStateException("INSERT RETURNING produced no row for userId=${sleepLog.userId}")
+        val saved =
+            try {
+                jdbcTemplate.queryForObject(sql, params, rowMapper)
+            } catch (ex: DataIntegrityViolationException) {
+                throw translateConstraintViolation(ex, sleepLog.userId)
+            } ?: throw IllegalStateException("INSERT RETURNING produced no row for userId=${sleepLog.userId}")
         logger.debug { "Inserted sleep_log id=${saved.id} for userId=${saved.userId}" }
         return saved
     }
@@ -72,8 +75,11 @@ class JdbcSleepLogRepository(
      * Translates known PostgreSQL constraint violations to domain exceptions so callers
      * see consistent error types. Unknown violations are re-thrown as-is.
      */
-    private fun translateConstraintViolation(ex: DataIntegrityViolationException, userId: Long): RuntimeException {
-        return when (DbConstraints.extractConstraintName(ex)) {
+    private fun translateConstraintViolation(
+        ex: DataIntegrityViolationException,
+        userId: Long,
+    ): RuntimeException =
+        when (DbConstraints.extractConstraintName(ex)) {
             DbConstraints.NO_OVERLAPPING_SLEEP -> {
                 logger.warn { "userId=$userId: DB constraint caught overlapping sleep log (concurrent insert)" }
                 ResourceConflictException("This sleep log overlaps with an existing entry.")
@@ -87,15 +93,15 @@ class JdbcSleepLogRepository(
                 ex
             }
         }
-    }
 
     override fun findLatestSleepLogByUserId(userId: Long): SleepLog? {
-        val sql = """
+        val sql =
+            """
             SELECT id, user_id, mood, bed_time, bed_timezone, wake_time, wake_timezone
             FROM sleep_logs
             WHERE user_id = :userId
             ORDER BY wake_time DESC LIMIT 1
-        """.trimIndent()
+            """.trimIndent()
         val params = MapSqlParameterSource("userId", userId)
         return jdbcTemplate.query(sql, params, rowMapper).firstOrNull()
     }
@@ -103,24 +109,26 @@ class JdbcSleepLogRepository(
     override fun findSleepLogsByUserIdAndWakeTimeRange(
         userId: Long,
         from: OffsetDateTime,
-        to: OffsetDateTime
+        to: OffsetDateTime,
     ): List<SleepLog> {
-        val sql = """
+        val sql =
+            """
             SELECT id, user_id, mood, bed_time, bed_timezone, wake_time, wake_timezone
             FROM sleep_logs
             WHERE user_id = :userId
               AND wake_time >= :fromStart
               AND wake_time < :toEnd
             ORDER BY wake_time DESC
-        """.trimIndent()
+            """.trimIndent()
 
-        val params = MapSqlParameterSource(
-            mapOf(
-                "userId" to userId,
-                "fromStart" to from,
-                "toEnd" to to
+        val params =
+            MapSqlParameterSource(
+                mapOf(
+                    "userId" to userId,
+                    "fromStart" to from,
+                    "toEnd" to to,
+                ),
             )
-        )
 
         return jdbcTemplate.query(sql, params, rowMapper)
     }

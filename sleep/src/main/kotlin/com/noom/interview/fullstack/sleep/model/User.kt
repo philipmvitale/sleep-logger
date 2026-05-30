@@ -8,5 +8,5 @@ import java.time.ZoneId
  */
 data class User(
     val id: Long,
-    val timeZone: ZoneId
+    val timeZone: ZoneId,
 )
