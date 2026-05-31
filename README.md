@@ -21,7 +21,7 @@ breakdowns.
 ## Tech Stack
 
 - **Language:** Kotlin 2.3 / Java 25
-- **Framework:** Spring Boot 3.5
+- **Framework:** Spring Boot 4.0
 - **Database:** PostgreSQL 17 with Flyway migrations
 - **Data access:** `NamedParameterJdbcTemplate` (no ORM)
 - **API contract:** OpenAPI 3.0 with code generation
