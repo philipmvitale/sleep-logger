@@ -56,6 +56,35 @@ cd sleep
 
 Requires a PostgreSQL instance at `localhost:5432` (or configure via `SPRING_DATASOURCE_URL`).
 
+### Dev Container
+
+A [dev container](https://containers.dev) (`.devcontainer/`) provides a fully provisioned, sandboxed workspace with
+Java 25, Kotlin 2.3, Gradle, Maven, and Claude Code preinstalled. It is built on the prebuilt
+`ghcr.io/philipmvitale/devcontainer-jvm` image, so there is nothing to compile locally.
+
+Open the repository in any tool that supports the [Dev Containers specification](https://containers.dev/supporting)
+(VS Code with the Dev Containers extension, JetBrains IDEs, or the `devcontainer` CLI) and reopen in the container when
+prompted. The project is mounted at `/workspace`.
+
+```bash
+# Using the devcontainer CLI
+devcontainer up --workspace-folder .
+devcontainer exec --workspace-folder . zsh
+```
+
+Notable behaviour:
+
+- **Egress firewall** — an allowlisting firewall restricts outbound network access, so the container needs the
+  `NET_ADMIN` and `NET_RAW` capabilities (already set via `runArgs`) and runs `init-firewall.sh` on every start.
+  Add extra hosts the project needs to reach in `.devcontainer/extra-domains.txt` (the Docker registry hosts are
+  already allowlisted so Testcontainers can pull images).
+- **Testcontainers** — the host Docker socket is mounted into the container so integration tests
+  (`./gradlew integrationTest`) work out of the box. A firewall hook (`.devcontainer/firewall-hooks/10-docker-sock.sh`)
+  adjusts the socket permissions for the non-root `node` user, and Ryuk is disabled
+  (`TESTCONTAINERS_RYUK_DISABLED=true`) to play nicely with the shared socket. Because the socket is host-root, only run
+  trusted code in the container.
+- **Persistence** — Claude Code auth/settings and shell history persist across rebuilds via named volumes.
+
 ## API
 
 The full API spec is rendered via Swagger UI on GitHub Pages:
