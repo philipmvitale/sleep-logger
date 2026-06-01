@@ -1,33 +1,42 @@
+// Sleep Logger dev container.
+//
+// Uses the shared devcontainer-jvm base image (Java 25 / Kotlin 2.3 / Maven / Gradle +
+// Claude Code + egress firewall), pulled from GHCR.
 {
-  "name": "Claude Code Sandbox",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "args": {
-      "TZ": "${localEnv:TZ:America/New_York}",
-      "CLAUDE_CODE_VERSION": "latest",
-      "GIT_DELTA_VERSION": "0.18.2",
-      "ZSH_IN_DOCKER_VERSION": "1.2.0"
-    }
-  },
-  "runArgs": [
-    "--cap-add=NET_ADMIN",
-    "--cap-add=NET_RAW"
-  ],
+  "name": "sleep-logger",
+  "image": "ghcr.io/philipmvitale/devcontainer-jvm:latest",
+
+  // Required for the egress firewall to program iptables/ipset.
+  "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
+
   "remoteUser": "node",
-  "mounts": [
-    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
-    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume",
-    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-  ],
+
+  // Use HTTPS for GitHub (the firewall allowlists GitHub over HTTPS, not SSH).
+  "postCreateCommand": "git config --global url.\"https://github.com/\".insteadOf git@github.com:",
+
+  // Initialize the firewall on every start; don't mark the container ready until it finishes.
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand",
+
   "containerEnv": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
     "CLAUDE_CONFIG_DIR": "/home/node/.claude",
     "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
+    // Testcontainers' Ryuk reaper misbehaves with a shared host socket.
     "TESTCONTAINERS_RYUK_DISABLED": "true"
   },
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+
+  "mounts": [
+    // Persist Claude Code auth/settings and shell history across rebuilds.
+    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume",
+    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    // Testcontainers: share the host Docker daemon (TRUSTED code only — this is host-root).
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    // Allow Testcontainers to pull images through the firewall (Docker registry hosts),
+    // and chmod the shared socket so the `node` user can use it.
+    "source=${localWorkspaceFolder}/.devcontainer/extra-domains.txt,target=/etc/devcontainer-firewall/extra-domains.txt,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.devcontainer/firewall-hooks,target=/etc/devcontainer-firewall/hooks.d,type=bind,consistency=cached"
+  ],
+
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "git config --global url.\"https://github.com/\".insteadOf git@github.com:",
-  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
-  "waitFor": "postStartCommand"
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated"
 }
